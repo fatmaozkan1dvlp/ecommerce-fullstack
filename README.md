@@ -35,9 +35,9 @@ ecommerce-fullstack/
 ### 1. ECommerce.API (Backend)
 
 
-cd ECommerce.API
-dotnet restore
-dotnet ef database update
+cd ECommerce.API,
+dotnet restore,
+dotnet ef database update,
 dotnet run
 
 
@@ -46,8 +46,8 @@ dotnet run
 ### 2. Frontend
 
 
-cd frontend
-npm install
+cd frontend,
+npm install,
 npm run dev
 
 
