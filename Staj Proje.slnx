@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="ECommerce.API/ECommerce.API.csproj" />
+  <Project Path="Frontend/frontend.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

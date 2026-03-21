@@ -1,0 +1,1136 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "ECommerce.API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Kategoriler": {
+      "get": {
+        "tags": [
+          "Kategoriler"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kategori"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kategori"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kategori"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Kategoriler"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Kategori"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Kategori"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Kategori"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kategori"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kategori"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kategori"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Kategoriler/{id}": {
+      "put": {
+        "tags": [
+          "Kategoriler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Kategori"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Kategori"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Kategori"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kategoriler/arsivle/{id}": {
+      "put": {
+        "tags": [
+          "Kategoriler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kategoriler/kalici-sil/{id}": {
+      "delete": {
+        "tags": [
+          "Kategoriler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kategoriler/arsivden-cikar/{id}": {
+      "put": {
+        "tags": [
+          "Kategoriler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kullanicilar": {
+      "get": {
+        "tags": [
+          "Kullanicilar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kullanici"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kullanici"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Kullanici"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Kullanicilar/register": {
+      "post": {
+        "tags": [
+          "Kullanicilar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciRegisterDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciRegisterDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciRegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kullanicilar/login": {
+      "post": {
+        "tags": [
+          "Kullanicilar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciLoginDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciLoginDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Kullanicilar/profil-guncelle/{id}": {
+      "put": {
+        "tags": [
+          "Kullanicilar"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciRegisterDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciRegisterDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KullaniciRegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Siparisler/olustur": {
+      "post": {
+        "tags": [
+          "Siparisler"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiparisKayitDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiparisKayitDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiparisKayitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Siparisler/durum-guncelle": {
+      "put": {
+        "tags": [
+          "Siparisler"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiparisDurumGuncelleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiparisDurumGuncelleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiparisDurumGuncelleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Siparisler/tum-siparisler": {
+      "get": {
+        "tags": [
+          "Siparisler"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Siparisler/dashboard-ozet": {
+      "get": {
+        "tags": [
+          "Siparisler"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler": {
+      "get": {
+        "tags": [
+          "Urunler"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Urunler"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Urun"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Urun"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Urun"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Urun"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Urun"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Urun"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Urunler/{id}": {
+      "put": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UrunGuncelleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UrunGuncelleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UrunGuncelleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/arsivle/{id}": {
+      "put": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/kalici-sil/{id}": {
+      "delete": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/arsivden-cikar/{id}": {
+      "put": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/arsivdekiler": {
+      "get": {
+        "tags": [
+          "Urunler"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Urunler/{id}/resim-ekle": {
+      "post": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dosya": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "dosya": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/resim-sil/{resimId}": {
+      "delete": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "resimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/resim-kapak-yap/{resimId}": {
+      "put": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "resimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Urunler/kategori/{kategoriId}": {
+      "get": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "kategoriId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Urunler/ara/{kelime}": {
+      "get": {
+        "tags": [
+          "Urunler"
+        ],
+        "parameters": [
+          {
+            "name": "kelime",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UrunlerDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Kategori": {
+        "required": [
+          "ad"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ad": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "olusturmaTarih": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "silindiMi": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Kullanici": {
+        "required": [
+          "adSoyad",
+          "eMail",
+          "sifreHash"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "adSoyad": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eMail": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "sifreHash": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "rol": {
+            "type": "string",
+            "nullable": true
+          },
+          "olusturmaT": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "silindiMi": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KullaniciLoginDto": {
+        "type": "object",
+        "properties": {
+          "eMail": {
+            "type": "string",
+            "nullable": true
+          },
+          "sifre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KullaniciRegisterDto": {
+        "type": "object",
+        "properties": {
+          "adSoyad": {
+            "type": "string",
+            "nullable": true
+          },
+          "eMail": {
+            "type": "string",
+            "nullable": true
+          },
+          "sifre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SepetItemDto": {
+        "type": "object",
+        "properties": {
+          "urunId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "adet": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SiparisDurumGuncelleDto": {
+        "type": "object",
+        "properties": {
+          "siparisId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "yeniDurum": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SiparisKayitDto": {
+        "type": "object",
+        "properties": {
+          "kullaniciId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sepet": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SepetItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Urun": {
+        "required": [
+          "ad",
+          "fiyat"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ad": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "fiyat": {
+            "type": "number",
+            "format": "double"
+          },
+          "stok": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "aciklama": {
+            "type": "string",
+            "nullable": true
+          },
+          "kategoriId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kategori": {
+            "$ref": "#/components/schemas/Kategori"
+          },
+          "olusturmaTarihi": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "silindiMi": {
+            "type": "boolean"
+          },
+          "resimler": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UrunResim"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UrunGuncelleDto": {
+        "type": "object",
+        "properties": {
+          "ad": {
+            "type": "string",
+            "nullable": true
+          },
+          "fiyat": {
+            "type": "number",
+            "format": "double"
+          },
+          "stok": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "aciklama": {
+            "type": "string",
+            "nullable": true
+          },
+          "kategoriId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UrunResim": {
+        "required": [
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "url": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "siraNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "urunId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "urun": {
+            "$ref": "#/components/schemas/Urun"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UrunlerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ad": {
+            "type": "string",
+            "nullable": true
+          },
+          "fiyat": {
+            "type": "number",
+            "format": "double"
+          },
+          "stok": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kategoriAd": {
+            "type": "string",
+            "nullable": true
+          },
+          "aciklama": {
+            "type": "string",
+            "nullable": true
+          },
+          "galeri": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
