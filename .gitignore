@@ -20,6 +20,7 @@ build/
 .cache/
 .eslintcache
 .stylelintcache
+src/api.js
 
 ## --- LOGS & GEÇİCİ DOSYALAR ---
 logs
@@ -36,7 +37,7 @@ pnpm-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
-src/api.js
+
 
 ## --- VS CODE KURALLARI ---
 .vscode/*
