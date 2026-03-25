@@ -6,6 +6,8 @@ import Musteriler from './admin/Musteriler';
 import UrunEkle from "./admin/UrunEkle";
 import KategoriEkle from './admin/KategoriEkle';
 import Arsivlenenler from './admin/Arsivlenenler';
+import UrunGuncelle from './admin/UrunGuncelle';
+import Siparisler from './admin/Siparisler';
 
 //deneme olsun diye yaptık sonrasında anasayfa oluşturulacak
 const AnaSayfa = () => (
@@ -30,6 +32,8 @@ function App() {
                 <Route path="/admin/musteriler" element={<Musteriler />} />
                 <Route path="/admin/urun-ekle" element={<UrunEkle />} />
                 <Route path="/admin/kategori-ekle" element={<KategoriEkle />} />
+                <Route path="/admin/urun-guncelle/:id" element={<UrunGuncelle />} />
+                <Route path="/admin/siparisler/:durum" element={<Siparisler />} />
             </Routes>
         </Router>
     );

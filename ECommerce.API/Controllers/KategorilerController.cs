@@ -59,8 +59,21 @@ namespace ECommerce.API.Controllers
             if (kategori.SilindiMi) return BadRequest($"{kategori.Ad} zaten arşivde.");
 
             kategori.SilindiMi = true;
+            _kategoriRepo.Update(kategori);
+
+            var bagliUrunler = await _context.Urunler
+                .Where(u => u.KategoriId == id && !u.SilindiMi)
+                .ToListAsync();
+
+            foreach (var urun in bagliUrunler)
+            {
+                urun.SilindiMi = true; 
+            }
+
+            await _context.SaveChangesAsync();
             await _kategoriRepo.SaveAsync();
-            return Ok(new { Message = "Kategori arşivlendi." });
+
+            return Ok(new { Message = $"{kategori.Ad} kategorisi ve içindeki {bagliUrunler.Count} ürün başarıyla arşivlendi." });
         }
 
         [HttpDelete("kalici-sil/{id}")]
@@ -69,12 +82,25 @@ namespace ECommerce.API.Controllers
             var kategori = await _kategoriRepo.GetByIdAsync(id);
             if (kategori == null) return NotFound("Kategori bulunamadı.");
 
-            var urunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id);
-            if (urunVarMi) return BadRequest("İçinde ürün olan kategori kalıcı olarak silinemez.");
+            var aktifUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id && !u.SilindiMi);
+            if (aktifUrunVarMi)
+            {
+                return BadRequest("Bu kategoride aktif ürünler var. Önce ürünleri silmeli veya başka kategoriye taşımalısınız.");
+            }
+
+            var arsivdeUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id && u.SilindiMi);
+            if (arsivdeUrunVarMi)
+            {
+                kategori.SilindiMi = true;
+                _kategoriRepo.Update(kategori);
+                await _kategoriRepo.SaveAsync();
+                return Ok(new { Message = "Kategoride arşivlenmiş ürünler bulunduğu için kategori arşive taşındı." });
+            }
 
             _kategoriRepo.Delete(kategori);
             await _kategoriRepo.SaveAsync();
-            return Ok(new { Message = "Kategori kalıcı olarak silindi." });
+
+            return Ok(new { Message = "Kategori (içinde ürün bulunmadığı için) kalıcı olarak silindi." });
         }
 
         [HttpPut("arsivden-cikar/{id}")]
@@ -87,7 +113,17 @@ namespace ECommerce.API.Controllers
 
             kategori.SilindiMi = false;
             await _kategoriRepo.SaveAsync();
-            return Ok(new { Message = "Kategori tekrar yayına alındı." });
+            return Ok(new { Message = $"{kategori.Ad} kategorisi ve bağlı ürünleri artık görüntülenebilir." });
+        }
+
+        [HttpGet("arsivlenenler")]
+        public async Task<IActionResult> GetArsivlenenKategoriler()
+        {
+            var arsiv = await _context.Kategoriler
+                .Where(k => k.SilindiMi == true)
+                .ToListAsync();
+
+            return Ok(arsiv);
         }
     }
 }

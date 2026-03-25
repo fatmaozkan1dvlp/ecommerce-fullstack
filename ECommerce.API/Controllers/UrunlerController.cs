@@ -57,6 +57,30 @@ namespace ECommerce.API.Controllers
             return Ok(urun);
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUrunById(int id)
+        {
+            var urun = await _context.Urunler
+                .Include(u => u.Resimler)
+                .FirstOrDefaultAsync(u => u.ID == id);
+
+            if (urun == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                id = urun.ID,
+                ad = urun.Ad,
+                fiyat = urun.Fiyat,
+                stok = urun.Stok,
+                kategoriId = urun.KategoriId,
+                aciklama = urun.Aciklama,
+                resimler = urun.Resimler
+                    .OrderBy(r => r.SiraNo)
+                    .Select(r => new { id = r.ID, url = r.Url, siraNo = r.SiraNo })
+            });
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UrunGuncelle(int id, [FromBody] UrunGuncelleDto dto)
         {
@@ -79,46 +103,65 @@ namespace ECommerce.API.Controllers
         [HttpPut("arsivle/{id}")]
         public async Task<IActionResult> UrunArsivle(int id)
         {
-            var urun = await _urunRepo.GetByIdAsync(id);
-            if (urun == null) return NotFound("Ürün bulunamadı.");
+            var urun = await _context.Urunler.FindAsync(id);
+            if (urun == null) return NotFound();
 
-            if (urun.SilindiMi) return BadRequest($"{urun.Ad} zaten arşivde.");
+            urun.SilindiMi = true; 
+            await _context.SaveChangesAsync();
 
-            urun.SilindiMi = true;
-            await _urunRepo.SaveAsync();
-            return Ok(new { Message = $"{urun.Ad} arşive kaldırıldı." });
+            var aktifUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == urun.KategoriId && !u.SilindiMi);
+
+            if (!aktifUrunVarMi)
+            {
+                var kategori = await _context.Kategoriler.FindAsync(urun.KategoriId);
+                if (kategori != null)
+                {
+                    kategori.SilindiMi = true;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return Ok(new { Message = "Ürün ve gerekliyse kategorisi arşivlendi." });
         }
 
 
         [HttpDelete("kalici-sil/{id}")]
         public async Task<IActionResult> UrunKaliciSil(int id)
         {
-            var urun = await _urunRepo.GetByIdAsync(id);
-            if (urun == null) return NotFound("Ürün bulunamadı.");
+            var urun = await _context.Urunler.FindAsync(id);
+            if (urun == null) return NotFound();
 
-            var siparisVarMi = await _context.SiparisDetaylari.AnyAsync(d => d.UrunId == id);
+            var siparisVarMi = await _context.SiparisDetaylari.AnyAsync(s => s.UrunId == id);
+
             if (siparisVarMi)
             {
-                return BadRequest("Bu ürün geçmiş siparişlerde kayıtlı olduğu için kalıcı olarak silinemez.");
+                return BadRequest(new { Message = "Bu ürün geçmiş siparişlerde bulunduğu için kalıcı olarak silinemez. Ancak arşivleyebilirsiniz." });
             }
 
-            _urunRepo.Delete(urun);
-            await _urunRepo.SaveAsync();
-            return Ok(new { Message = "Ürün silindi." });
+            int kategoriId = urun.KategoriId;
+            _context.Urunler.Remove(urun);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Ürün (siparişi olmadığı için) başarıyla silindi." });
         }
 
 
         [HttpPut("arsivden-cikar/{id}")]
-        public async Task<IActionResult> ArsivdenCikar(int id)
+        public async Task<IActionResult> UrunArsivdenCikar(int id)
         {
-            var urun = await _urunRepo.GetByIdAsync(id);
-            if (urun == null) return NotFound("Ürün Bulunamadı!");
+            var urun = await _context.Urunler.FindAsync(id);
+            if (urun == null) return NotFound();
 
-            if (!urun.SilindiMi) return BadRequest($"{urun.Ad} zaten yayında.");
+            urun.SilindiMi = false; 
 
-            urun.SilindiMi = false;
-            await _urunRepo.SaveAsync();
-            return Ok(new { Message = $"{urun.Ad} tekrar yayına alındı." });
+            var kategori = await _context.Kategoriler.FindAsync(urun.KategoriId);
+            if (kategori != null && kategori.SilindiMi)
+            {
+                kategori.SilindiMi = false;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = "Ürün ve kategorisi aktif edildi." });
         }
 
         [HttpGet("arsivdekiler")]

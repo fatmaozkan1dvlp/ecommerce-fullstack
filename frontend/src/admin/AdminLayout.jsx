@@ -82,50 +82,50 @@ const AdminLayout = ({ children }) => {
                                 <ul className="mt-1 space-y-1 pl-8">
 
                                     <li>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            to="/admin/siparisler/Alındı"
                                             className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                                         >
                                             <Clock size={18} className="text-gray-500" />
                                             <span className="ml-3">Aktif Siparişler</span>
-                                        </a>
+                                        </Link>
                                     </li>
                                     <li>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            to="/admin/siparisler/Hazırlanıyor"
                                             className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                                         >
                                             <Boxes size={18} className="text-gray-500" />
                                             <span className="ml-3">Hazırlanan Siparişler</span>
-                                        </a>
+                                        </Link>
                                     </li>
                                     <li>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            to="/admin/siparisler/Kargoya Verildi"
                                             className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                                         >
                                             <Truck size={18} className="text-gray-500" />
                                             <span className="ml-3">Kargolanan Siparişler</span>
-                                        </a>
+                                        </Link>
                                     </li>
 
                                     <li>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            to="/admin/siparisler/Tamamlandı"
                                             className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                                         >
                                             <CheckCircle size={18} className="text-gray-500" />
                                             <span className="ml-3">Tamamlanan Siparişler</span>
-                                        </a>
+                                        </Link>
                                     </li>
                                     <li>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            to="/admin/siparisler/İptal Edildi"
                                             className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                                         >
                                             <XCircle size={18} className="text-gray-500" /> 
                                             <span className="ml-3">İptal Edilenler</span>
-                                        </a>
+                                        </Link>
                                     </li>
                                 </ul>
                             )}
@@ -147,12 +147,12 @@ const AdminLayout = ({ children }) => {
                                 <span className="ml-3">Arşivlenenler</span>
                             </Link>
                         </li>
-                        <li>
-                            <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                                <Settings size={20} className="text-gray-500" />
-                                <span className="ml-3">Raporlar</span>
-                            </a>
-                        </li>
+                        {/*<li>*/}
+                        {/*    <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">*/}
+                        {/*        <Settings size={20} className="text-gray-500" />*/}
+                        {/*        <span className="ml-3">Raporlar</span>*/}
+                        {/*    </a>*/}
+                        {/*</li>*/}
                     </ul>
                 </div>
             </aside>

@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo} from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import api from '../api'; 
 import AdminLayout from './AdminLayout';
-import { Trash2, Edit, Package, Layers, Image as ImageIcon, Search } from 'lucide-react';
+import { Trash2, Edit, Package, Layers, Image as ImageIcon, Search, Archive } from 'lucide-react';
 
 const Urunler = () => {
 
@@ -56,6 +56,22 @@ const Urunler = () => {
 
             }
 
+        }
+    };
+
+    const urunArsivle = async (id) => {
+        const onay = window.confirm("Bu ürün satıştan kaldırılacak ve arşive taşınacak. Onaylıyor musunuz?");
+        if (!onay) return;
+
+        try {
+            await api.put(`/Urunler/arsivle/${id}`);
+
+            setUrunler(prev => prev.filter(u => Number(u.id || u.ID) !== Number(id)));
+
+            alert("Ürün başarıyla arşivlendi.");
+        } catch (error) {
+            console.error("Arşivleme hatası:", error);
+            alert("Ürün arşivlenirken bir hata oluştu.");
         }
     };
     useEffect(() => {
@@ -218,8 +234,15 @@ const Urunler = () => {
                                             </td>
                                             <td className="px-8 py-5 text-center">
                                                 <div className="flex justify-center space-x-2">
-                                                    <button className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all shadow-sm">
+                                                    <button onClick={() => navigate(`/admin/urun-guncelle/${ u.id || u.ID }`)} className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all shadow-sm">
                                                         <Edit size={20} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => urunArsivle(u.id || u.ID)}
+                                                        className="p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-xl transition-all shadow-sm"
+                                                        title="Arşive Gönder"
+                                                    >
+                                                        <Archive size={20} />
                                                     </button>
                                                     <button onClick={() => urunSil(u.id || u.ID)} className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all shadow-sm">
                                                         <Trash2 size={20} />

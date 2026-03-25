@@ -1,3 +1,9 @@
+//MÜŞTERİLERİN KAÇ SİPARİŞ VERDİKLERİ TOPLAM TUTARLARI DA GÖZÜKECEK ONU YAP!!
+
+
+
+
+
 import { useEffect, useState, useMemo } from 'react';
 import api from '../api';
 import AdminLayout from './AdminLayout';

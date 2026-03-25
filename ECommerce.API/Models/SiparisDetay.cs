@@ -8,7 +8,10 @@ namespace ECommerce.API.Models
         [Key]
         public int ID { get; set; }
         public int SiparisId { get; set; }
+        public virtual Siparis Siparis { get; set; }
+
         public int UrunId { get; set; }
+        public virtual Urun Urun { get; set; }
         public int Adet { get; set; }
         [Precision(18, 2)]
         public decimal BirimFiyat { get; set; }

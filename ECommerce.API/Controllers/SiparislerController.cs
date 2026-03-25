@@ -29,6 +29,9 @@ namespace ECommerce.API.Controllers
             var yeniSiparis = new Siparis
             {
                 KullaniciId = dto.KullaniciId,
+                TamAdres = dto.TamAdres,
+                Sehir = dto.Sehir,
+                Telefon = dto.Telefon,
                 SiparisTarihi = DateTime.Now,
                 ToplamTutar = 0
             };
@@ -72,15 +75,15 @@ namespace ECommerce.API.Controllers
             return Ok(new { Message = $"Durum '{dto.YeniDurum}' olarak güncellendi." });
         }
 
-        [HttpGet("tum-siparisler")]
-        public async Task<IActionResult> TumSiparisleriGetir()
-        {
-            var siparisler = await _context.Siparisler
-                .Include(s => s.SiparisDetaylari)
-                .OrderByDescending(s => s.SiparisTarihi)
-                .ToListAsync();
-            return Ok(siparisler);
-        }
+        //[HttpGet("tum-siparisler")]
+        //public async Task<IActionResult> TumSiparisleriGetir()
+        //{
+        //    var siparisler = await _context.Siparisler
+        //        .Include(s => s.SiparisDetaylari)
+        //        .OrderByDescending(s => s.SiparisTarihi)
+        //        .ToListAsync();
+        //    return Ok(siparisler);
+        //}
 
         [HttpGet("dashboard-ozet")]
         public async Task<IActionResult> GetDashboardOzet()
@@ -91,6 +94,64 @@ namespace ECommerce.API.Controllers
             var sonSiparisler = await _context.Siparisler.OrderByDescending(s => s.SiparisTarihi).Take(5).ToListAsync();
 
             return Ok(new { ToplamKazanc = toplamSatis, ToplamSiparis = siparisSayisi, AktifUrunSayisi = urunSayisi, SonBesSiparis = sonSiparisler });
+        }
+
+        [HttpGet("duruma-gore")]
+        public async Task<IActionResult> SiparisleriGetirByDurum(string durum)
+        {
+            var query = _context.Siparisler.AsQueryable();
+
+            if (!string.IsNullOrEmpty(durum) && durum != "Hepsi")
+            {
+                query = query.Where(s => s.Durum == durum);
+            }
+
+            var result = await query
+                .OrderByDescending(s => s.SiparisTarihi)
+                .Select(s => new { // Basit anonim nesne veya DTO
+                    s.ID,
+                    s.SiparisTarihi,
+                    s.ToplamTutar,
+                    s.Durum
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSiparisDetay(int id)
+        {
+            // Veriyi veritabanından tüm dallarıyla çekiyoruz
+            var siparis = await _context.Siparisler
+                .Include(s => s.Kullanici)
+                .Include(s => s.SiparisDetaylari)
+                    .ThenInclude(d => d.Urun)
+                        .ThenInclude(u => u.Resimler)
+                .FirstOrDefaultAsync(s => s.ID == id);
+
+            if (siparis == null) return NotFound("Sipariş bulunamadı");
+
+            // JSON dönerken isimleri küçük harf yapıyoruz ki React görsün
+            return Ok(new
+            {
+                id = siparis.ID,
+                musteriAdi = siparis.Kullanici?.AdSoyad ?? "Müşteri Bilgisi Yok",
+                telefon = siparis.Telefon,
+                adres = $"{siparis.TamAdres} / {siparis.Sehir}",
+                toplamTutar = siparis.ToplamTutar,
+                durum = siparis.Durum,
+                siparisTarihi = siparis.SiparisTarihi,
+                detaylar = siparis.SiparisDetaylari.Select(d => new
+                {
+                    id = d.ID,
+                    urunAdi = d.Urun?.Ad ?? "Ürün Silinmiş",
+                    // Ürünün ilk resmini alıyoruz, yoksa boş döner
+                    urunResimUrl = d.Urun?.Resimler.OrderBy(r => r.SiraNo).Select(r => r.Url).FirstOrDefault() ?? "",
+                    adet = d.Adet,
+                    birimFiyat = d.BirimFiyat
+                }).ToList()
+            });
         }
     }
 }

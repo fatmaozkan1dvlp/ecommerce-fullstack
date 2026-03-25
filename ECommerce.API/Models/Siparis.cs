@@ -7,10 +7,15 @@ namespace ECommerce.API.Models
         [Key]
         public int ID { get; set; }
         public int KullaniciId { get; set; }
+        public virtual Kullanici Kullanici { get; set; }
+        [Required]
+        public string TamAdres { get; set; }
+        public string Sehir { get; set; }
+        public string Telefon { get; set; }
         public DateTime SiparisTarihi { get; set; } = DateTime.Now;
         [Precision(18, 2)]
         public decimal ToplamTutar { get; set; }
-        public string Durum { get; set; } = "Sipariş Alındı";
+        public string Durum { get; set; } = "Alındı";
         public virtual List<SiparisDetay> SiparisDetaylari { get; set; } = new();
     }
 }

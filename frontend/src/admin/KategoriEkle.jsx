@@ -12,15 +12,12 @@ const KategoriEkle = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Boş veri kontrolü
         if (!ad.trim()) return;
 
         setYukleniyor(true);
         setHata(null);
 
         try {
-            // Backend'deki modeline göre "Ad" veya "ad" olarak gönder
             await api.post("/Kategoriler", { Ad: ad });
 
             alert("Kategori başarıyla eklendi!");

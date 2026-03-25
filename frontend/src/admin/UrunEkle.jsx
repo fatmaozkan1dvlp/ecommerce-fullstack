@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { ChevronLeft, Save, Package, DollarSign, List, Hash, Image, X, Plus, AlertCircle } from 'lucide-react';
@@ -17,10 +17,9 @@ const UrunEkle = () => {
     const [aciklama, setAciklama] = useState('');
     const [secilenResimler, setSecilenResimler] = useState([]);
 
-    const API_URL = "https://localhost:7126/api";
 
     useEffect(() => {
-        axios.get(`${API_URL}/Kategoriler`)
+        api.get(`/Kategoriler`)
             .then(res => setKategoriler(res.data))
             .catch(err => console.error("Kategoriler yüklenemedi:", err));
     }, []);
@@ -62,7 +61,7 @@ const UrunEkle = () => {
         };
 
         try {
-            const urunRes = await axios.post(`${API_URL}/Urunler`, urunVerisi);
+            const urunRes = await api.post(`/Urunler`, urunVerisi);
             const yeniUrunId = urunRes.data.id || urunRes.data.ID;
 
             if (yeniUrunId) {
@@ -70,7 +69,7 @@ const UrunEkle = () => {
                     const formData = new FormData();
                     formData.append('dosya', dosya);
 
-                    await axios.post(`${API_URL}/Urunler/${yeniUrunId}/resim-ekle`, formData, {
+                    await api.post(`/Urunler/${yeniUrunId}/resim-ekle`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
                 }
