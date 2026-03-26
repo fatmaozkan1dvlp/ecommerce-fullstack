@@ -3,6 +3,7 @@
 [Oo]bj/
 .vs/
 *.db
+appsettings.json
 appsettings.Development.json
 
 # --- Frontend (React) ---
