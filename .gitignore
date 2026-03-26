@@ -5,6 +5,13 @@
 *.db
 appsettings.json
 appsettings.Development.json
+*.user
+*.db
+*.sln.docstates
+
+# --- Resimler ve Statik Dosyalar ---
+# wwwroot 
+**/wwwroot/images/*
 
 # --- Frontend (React) ---
 **/node_modules/
