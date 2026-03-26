@@ -15,7 +15,6 @@ Bu proje, React (frontend) ve .NET Core Web API (backend) kullanılarak gelişti
 - ASP.NET Core Web API
 - Entity Framework Core
 - MSSQL
-- Repository Pattern
 
 ---
 
