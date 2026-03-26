@@ -20,7 +20,7 @@ build/
 .cache/
 .eslintcache
 .stylelintcache
-src/api.js
+frontend/src/api.js
 
 ## --- LOGS & GEÇİCİ DOSYALAR ---
 logs
