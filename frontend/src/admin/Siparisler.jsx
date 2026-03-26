@@ -7,7 +7,6 @@ import { Package, Eye } from 'lucide-react';
 const Siparisler = () => {
 
     const { durum } = useParams();
-
     const [siparisler, setSiparisler] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedSiparis, setSelectedSiparis] = useState(null); 
@@ -77,7 +76,6 @@ const Siparisler = () => {
         <AdminLayout>
             <div className="space-y-6">
 
-                {/* HEADER */}
                 <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl">
                     <div className="flex items-center gap-3">
                         <Package className="text-blue-600" />
@@ -87,7 +85,6 @@ const Siparisler = () => {
                     </div>
                 </div>
 
-                {/* TABLE */}
                 <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
 
                     <table className="w-full text-sm">

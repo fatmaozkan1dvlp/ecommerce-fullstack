@@ -1,8 +1,6 @@
-﻿using ECommerce.API.Data;
-using ECommerce.API.Models;
-using ECommerce.API.Repositories;
+﻿using ECommerce.API.Models;
+using ECommerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.API.Controllers
 {
@@ -10,121 +8,91 @@ namespace ECommerce.API.Controllers
     [ApiController]
     public class KategorilerController : ControllerBase
     {
-        private readonly IRepository<Kategori> _kategoriRepo;
-        private readonly AppDbContext _context; 
+        private readonly IKategorilerService _kategorilerService;
 
-        public KategorilerController(IRepository<Kategori> kategoriRepo, AppDbContext context)
+        public KategorilerController(IKategorilerService kategorilerService)
         {
-            _kategoriRepo = kategoriRepo;
-            _context = context;
+            _kategorilerService = kategorilerService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Kategori>>> GetKategoriler()
         {
-            return await _context.Kategoriler.Where(x => !x.SilindiMi).ToListAsync();
+            var kategoriler = await _kategorilerService.GetKategorilerAsync();
+            return Ok(kategoriler);
         }
 
         [HttpPost]
         public async Task<ActionResult<Kategori>> PostKategori(Kategori kategori)
         {
-            kategori.OlusturmaTarih = DateTime.Now;
-            kategori.SilindiMi = false;
-
-            await _kategoriRepo.AddAsync(kategori);
-            await _kategoriRepo.SaveAsync();
-
-            return Ok(kategori);
+            var yeniKategori = await _kategorilerService.PostKategoriAsync(kategori);
+            return Ok(yeniKategori);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> KategoriGuncelle(int id, Kategori guncelKategori)
         {
-            var mevcutKategori = await _kategoriRepo.GetByIdAsync(id);
-            if (mevcutKategori == null) return NotFound("Kategori bulunamadı.");
+            var sonuc = await _kategorilerService.KategoriGuncelleAsync(id, guncelKategori);
 
-            mevcutKategori.Ad = guncelKategori.Ad;
+            if (!sonuc.BasariliMi)
+                return NotFound(sonuc.Mesaj);
 
-            _kategoriRepo.Update(mevcutKategori);
-            await _kategoriRepo.SaveAsync();
-            return Ok(new { Message = "Kategori güncellendi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
 
         [HttpPut("arsivle/{id}")]
         public async Task<IActionResult> KategoriArsivle(int id)
         {
-            var kategori = await _kategoriRepo.GetByIdAsync(id);
-            if (kategori == null) return NotFound("Kategori bulunamadı.");
+            var sonuc = await _kategorilerService.KategoriArsivleAsync(id);
 
-            if (kategori.SilindiMi) return BadRequest($"{kategori.Ad} zaten arşivde.");
-
-            kategori.SilindiMi = true;
-            _kategoriRepo.Update(kategori);
-
-            var bagliUrunler = await _context.Urunler
-                .Where(u => u.KategoriId == id && !u.SilindiMi)
-                .ToListAsync();
-
-            foreach (var urun in bagliUrunler)
+            if (!sonuc.BasariliMi)
             {
-                urun.SilindiMi = true; 
+                if (sonuc.Mesaj == "Kategori bulunamadı.")
+                    return NotFound(sonuc.Mesaj);
+
+                return BadRequest(sonuc.Mesaj);
             }
 
-            await _context.SaveChangesAsync();
-            await _kategoriRepo.SaveAsync();
-
-            return Ok(new { Message = $"{kategori.Ad} kategorisi ve içindeki {bagliUrunler.Count} ürün başarıyla arşivlendi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
 
         [HttpDelete("kalici-sil/{id}")]
         public async Task<IActionResult> KategoriKaliciSil(int id)
         {
-            var kategori = await _kategoriRepo.GetByIdAsync(id);
-            if (kategori == null) return NotFound("Kategori bulunamadı.");
+            var sonuc = await _kategorilerService.KategoriKaliciSilAsync(id);
 
-            var aktifUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id && !u.SilindiMi);
-            if (aktifUrunVarMi)
+            if (!sonuc.BasariliMi)
             {
-                return BadRequest("Bu kategoride aktif ürünler var. Önce ürünleri silmeli veya başka kategoriye taşımalısınız.");
+                if (sonuc.Mesaj == "Kategori bulunamadı.")
+                    return NotFound(sonuc.Mesaj);
+
+                return BadRequest(sonuc.Mesaj);
             }
 
-            var arsivdeUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id && u.SilindiMi);
-            if (arsivdeUrunVarMi)
-            {
-                kategori.SilindiMi = true;
-                _kategoriRepo.Update(kategori);
-                await _kategoriRepo.SaveAsync();
-                return Ok(new { Message = "Kategoride arşivlenmiş ürünler bulunduğu için kategori arşive taşındı." });
-            }
-
-            _kategoriRepo.Delete(kategori);
-            await _kategoriRepo.SaveAsync();
-
-            return Ok(new { Message = "Kategori (içinde ürün bulunmadığı için) kalıcı olarak silindi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
 
         [HttpPut("arsivden-cikar/{id}")]
         public async Task<IActionResult> ArsivdenCikar(int id)
         {
-            var kategori = await _kategoriRepo.GetByIdAsync(id);
-            if (kategori == null) return NotFound("Kategori bulunamadı.");
+            var sonuc = await _kategorilerService.ArsivdenCikarAsync(id);
 
-            if (!kategori.SilindiMi) return BadRequest($"{kategori.Ad} zaten yayında.");
+            if (!sonuc.BasariliMi)
+            {
+                if (sonuc.Mesaj == "Kategori bulunamadı.")
+                    return NotFound(sonuc.Mesaj);
 
-            kategori.SilindiMi = false;
-            await _kategoriRepo.SaveAsync();
-            return Ok(new { Message = $"{kategori.Ad} kategorisi ve bağlı ürünleri artık görüntülenebilir." });
+                return BadRequest(sonuc.Mesaj);
+            }
+
+            return Ok(new { Message = sonuc.Mesaj });
         }
 
         [HttpGet("arsivlenenler")]
         public async Task<IActionResult> GetArsivlenenKategoriler()
         {
-            var arsiv = await _context.Kategoriler
-                .Where(k => k.SilindiMi == true)
-                .ToListAsync();
-
+            var arsiv = await _kategorilerService.GetArsivlenenKategorilerAsync();
             return Ok(arsiv);
         }
     }
 }
-

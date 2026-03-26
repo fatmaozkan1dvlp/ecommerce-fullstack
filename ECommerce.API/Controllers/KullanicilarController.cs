@@ -1,9 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ECommerce.API.Data;
-using ECommerce.API.DTOs;
-using ECommerce.API.Models;
-using ECommerce.API.Repositories;
-using Microsoft.AspNetCore.Http;
+﻿using ECommerce.API.DTOs;
+using ECommerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
@@ -12,75 +8,56 @@ namespace ECommerce.API.Controllers
     [ApiController]
     public class KullanicilarController : ControllerBase
     {
-        private readonly IRepository<Kullanici> _kullaniciRepo;
-        private readonly AppDbContext _context; 
+        private readonly IKullanicilarService _kullanicilarService;
 
-        public KullanicilarController(IRepository<Kullanici> kullaniciRepo, AppDbContext context)
+        public KullanicilarController(IKullanicilarService kullanicilarService)
         {
-            _kullaniciRepo = kullaniciRepo;
-            _context = context;
+            _kullanicilarService = kullanicilarService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Kullanici>>> GetMusteriler()
+        public async Task<ActionResult> GetMusteriler()
         {
-            return await _context.Kullanicilar.ToListAsync();
+            var musteriler = await _kullanicilarService.GetMusterilerAsync();
+            return Ok(musteriler);
         }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(KullaniciRegisterDto dto)
         {
-            if (_context.Kullanicilar.Any(u => u.EMail == dto.EMail))
-                return BadRequest("Bu email zaten kayıtlı.");
+            var sonuc = await _kullanicilarService.RegisterAsync(dto);
 
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
+            if (!sonuc.BasariliMi)
+                return BadRequest(sonuc.Mesaj);
 
-            var yeniKullanici = new Kullanici
-            {
-                AdSoyad = dto.AdSoyad,
-                EMail = dto.EMail,
-                SifreHash = passwordHash,
-                Rol = "Musteri",
-                OlusturmaT = DateTime.Now,
-                SilindiMi = false
-            };
-
-            await _kullaniciRepo.AddAsync(yeniKullanici);
-            await _kullaniciRepo.SaveAsync();
-
-            return Ok("Kullanıcı başarıyla oluşturuldu.");
+            return Ok(sonuc.Mesaj);
         }
 
         [HttpPost("login")]
-        public IActionResult Login(KullaniciLoginDto dto)
+        public async Task<IActionResult> Login(KullaniciLoginDto dto)
         {
-            var kullanici = _context.Kullanicilar.FirstOrDefault(u => u.EMail == dto.EMail && !u.SilindiMi);
+            var sonuc = await _kullanicilarService.LoginAsync(dto);
 
-            if (kullanici == null) return BadRequest("Kullanıcı bulunamadı.");
+            if (!sonuc.BasariliMi)
+                return BadRequest(sonuc.Mesaj);
 
-            bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(dto.Sifre, kullanici.SifreHash);
-
-            if (!sifreDogruMu) return BadRequest("Hatalı şifre.");
-
-            return Ok(new { Message = "Giriş başarılı!", AdSoyad = kullanici.AdSoyad, Rol = kullanici.Rol, Id = kullanici.ID });
+            return Ok(sonuc.Data);
         }
 
         [HttpPut("profil-guncelle/{id}")]
         public async Task<IActionResult> ProfilGuncelle(int id, KullaniciRegisterDto dto)
         {
-            var kullanici = await _kullaniciRepo.GetByIdAsync(id);
-            if (kullanici == null) return NotFound("Kullanıcı bulunamadı.");
+            var sonuc = await _kullanicilarService.ProfilGuncelleAsync(id, dto);
 
-            
-            if (_context.Kullanicilar.Any(u => u.EMail == dto.EMail && u.ID != id))
-                return BadRequest("Bu email zaten başka bir kullanıcı tarafından kullanılıyor.");
+            if (!sonuc.BasariliMi) {
+                if(sonuc.Mesaj=="Kullanıcı Bulunamadı.")
+                    return NotFound(sonuc.Mesaj);
+                
+                return BadRequest(sonuc.Mesaj); 
+            }
+               
 
-            if (!string.IsNullOrWhiteSpace(dto.AdSoyad) && dto.AdSoyad != "string") kullanici.AdSoyad = dto.AdSoyad;
-            if (!string.IsNullOrWhiteSpace(dto.EMail) && dto.EMail != "string") kullanici.EMail = dto.EMail;
-            if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string") kullanici.SifreHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
-
-            _kullaniciRepo.Update(kullanici);
-            await _kullaniciRepo.SaveAsync();
-            return Ok(new { Message = "Bilgileriniz güncellendi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
     }
 }

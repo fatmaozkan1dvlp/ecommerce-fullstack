@@ -43,7 +43,7 @@ const Arsivlenenler = () => {
             try {
                 await api.put(`/Kategoriler/arsivden-cikar/${id}`);
                 setRefresh(prev => prev + 1);
-                alert("Kategori tekrar yayına alındı!");
+                alert("Kategori ve bağlı ürünler tekrar yayına alındı!");
             } catch (error) { console.error(error); }
         };
 

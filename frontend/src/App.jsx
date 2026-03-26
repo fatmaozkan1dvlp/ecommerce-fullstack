@@ -12,7 +12,7 @@ import Siparisler from './admin/Siparisler';
 //deneme olsun diye yaptık sonrasında anasayfa oluşturulacak
 const AnaSayfa = () => (
     <div className="p-10 text-center">
-        <h1 className="text-4xl font-bold">Hoş Geldiniz! 🚀</h1>
+        <h1 className="text-4xl font-bold">Hoş Geldiniz! </h1>
         <p className="mt-4">Burası müşterilerin göreceği vitrin sayfası.</p>
         <Link to="/admin" className="text-blue-500 underline mt-10 inline-block">
             Admin Paneline Git

@@ -1,6 +1,8 @@
 using ECommerce.API.Data;
-using ECommerce.API.Repositories;
 using Microsoft.EntityFrameworkCore;
+using ECommerce.API.Services.Interfaces;
+using ECommerce.API.Services.Concrete;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +11,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IKullanicilarService,KullanicilarService>();
+builder.Services.AddScoped<IKategorilerService,KategorilerService>();
+builder.Services.AddScoped<IUrunlerService,UrunlerService>();
+builder.Services.AddScoped<ISiparislerService,SiparislerService>();
 
 
 builder.Services.AddControllers();

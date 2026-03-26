@@ -1,9 +1,7 @@
 ﻿using ECommerce.API.DTOs;
-using ECommerce.API.Data;
 using ECommerce.API.Models;
-using ECommerce.API.Repositories;
+using ECommerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.API.Controllers
 {
@@ -11,293 +9,166 @@ namespace ECommerce.API.Controllers
     [ApiController]
     public class UrunlerController : ControllerBase
     {
-        private readonly IRepository<Urun> _urunRepo;
-        private readonly IRepository<UrunResim> _resimRepo; 
-        private readonly AppDbContext _context;
+        private readonly IUrunlerService _urunlerService;
 
-        public UrunlerController(IRepository<Urun> urunRepo, IRepository<UrunResim> resimRepo, AppDbContext context)
+        public UrunlerController(IUrunlerService urunlerService)
         {
-            _urunRepo = urunRepo;
-            _resimRepo = resimRepo;
-            _context = context;
+            _urunlerService = urunlerService;
         }
 
-  
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UrunlerDto>>> GetUrunler()
         {
-            var urunler = await _context.Urunler
-                .Include(u => u.Resimler)
-                .Include(u => u.Kategori)
-                .Where(u => !u.SilindiMi)
-                .Select(u => new UrunlerDto
-                {
-                    ID = u.ID,
-                    Ad = u.Ad,
-                    Fiyat = u.Fiyat,
-                    Stok = u.Stok,
-                    KategoriAd = u.Kategori != null ? u.Kategori.Ad : "Kategorisiz",
-                    Galeri = u.Resimler.OrderBy(r => r.SiraNo).Select(r => r.Url).ToList()
-                })
-                .ToListAsync();
-
+            var urunler = await _urunlerService.GetUrunlerAsync();
             return Ok(urunler);
         }
-
 
         [HttpPost]
         public async Task<ActionResult<Urun>> PostUrun([FromBody] Urun urun)
         {
-            urun.Kategori = null;
-            urun.OlusturmaTarihi = DateTime.Now;
-            urun.SilindiMi = false;
-
-            await _urunRepo.AddAsync(urun);
-            await _urunRepo.SaveAsync();
-            return Ok(urun);
+            var yeniUrun = await _urunlerService.PostUrunAsync(urun);
+            return Ok(yeniUrun);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUrunById(int id)
         {
-            var urun = await _context.Urunler
-                .Include(u => u.Resimler)
-                .FirstOrDefaultAsync(u => u.ID == id);
+            var urun = await _urunlerService.GetUrunByIdAsync(id);
 
             if (urun == null)
                 return NotFound();
 
-            return Ok(new
-            {
-                id = urun.ID,
-                ad = urun.Ad,
-                fiyat = urun.Fiyat,
-                stok = urun.Stok,
-                kategoriId = urun.KategoriId,
-                aciklama = urun.Aciklama,
-                resimler = urun.Resimler
-                    .OrderBy(r => r.SiraNo)
-                    .Select(r => new { id = r.ID, url = r.Url, siraNo = r.SiraNo })
-            });
+            return Ok(urun);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UrunGuncelle(int id, [FromBody] UrunGuncelleDto dto)
         {
-            var mevcutUrun = await _urunRepo.GetByIdAsync(id);
+            var sonuc = await _urunlerService.UrunGuncelleAsync(id, dto);
 
-            if (mevcutUrun == null)
-                return NotFound(new { Message = "Ürün bulunamadı." });
+            if (!sonuc.BasariliMi)
+                return NotFound(new { Message = sonuc.Mesaj });
 
-            if (!string.IsNullOrWhiteSpace(dto.Ad) && dto.Ad != "string") mevcutUrun.Ad = dto.Ad;
-            if (!string.IsNullOrWhiteSpace(dto.Aciklama) && dto.Aciklama != "string") mevcutUrun.Aciklama = dto.Aciklama;
-            if (dto.Fiyat > 0) mevcutUrun.Fiyat = dto.Fiyat;
-            if (dto.Stok >= 0) mevcutUrun.Stok = dto.Stok;
-            if (dto.KategoriId > 0) mevcutUrun.KategoriId = dto.KategoriId;
-
-            _urunRepo.Update(mevcutUrun);
-            await _urunRepo.SaveAsync();
-            return Ok(new { Message = "Ürün güncellendi.", Urun = mevcutUrun });
+            return Ok(new { Message = sonuc.Mesaj, Urun = sonuc.Data });
         }
 
         [HttpPut("arsivle/{id}")]
         public async Task<IActionResult> UrunArsivle(int id)
         {
-            var urun = await _context.Urunler.FindAsync(id);
-            if (urun == null) return NotFound();
+            var sonuc = await _urunlerService.UrunArsivleAsync(id);
 
-            urun.SilindiMi = true; 
-            await _context.SaveChangesAsync();
+            if (!sonuc.BasariliMi)
+                return NotFound(new { Message = sonuc.Mesaj });
 
-            var aktifUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == urun.KategoriId && !u.SilindiMi);
-
-            if (!aktifUrunVarMi)
-            {
-                var kategori = await _context.Kategoriler.FindAsync(urun.KategoriId);
-                if (kategori != null)
-                {
-                    kategori.SilindiMi = true;
-                    await _context.SaveChangesAsync();
-                }
-            }
-
-            return Ok(new { Message = "Ürün ve gerekliyse kategorisi arşivlendi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
-
 
         [HttpDelete("kalici-sil/{id}")]
         public async Task<IActionResult> UrunKaliciSil(int id)
         {
-            var urun = await _context.Urunler.FindAsync(id);
-            if (urun == null) return NotFound();
+            var sonuc = await _urunlerService.UrunKaliciSilAsync(id);
 
-            var siparisVarMi = await _context.SiparisDetaylari.AnyAsync(s => s.UrunId == id);
-
-            if (siparisVarMi)
+            if (!sonuc.BasariliMi)
             {
-                return BadRequest(new { Message = "Bu ürün geçmiş siparişlerde bulunduğu için kalıcı olarak silinemez. Ancak arşivleyebilirsiniz." });
+                if (sonuc.Mesaj == "Ürün bulunamadı.")
+                    return NotFound(new { Message = sonuc.Mesaj });
+
+                return BadRequest(new { Message = sonuc.Mesaj });
             }
 
-            int kategoriId = urun.KategoriId;
-            _context.Urunler.Remove(urun);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Ürün (siparişi olmadığı için) başarıyla silindi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
-
 
         [HttpPut("arsivden-cikar/{id}")]
         public async Task<IActionResult> UrunArsivdenCikar(int id)
         {
-            var urun = await _context.Urunler.FindAsync(id);
-            if (urun == null) return NotFound();
+            var sonuc = await _urunlerService.UrunArsivdenCikarAsync(id);
 
-            urun.SilindiMi = false; 
+            if (!sonuc.BasariliMi)
+                return NotFound(new { Message = sonuc.Mesaj });
 
-            var kategori = await _context.Kategoriler.FindAsync(urun.KategoriId);
-            if (kategori != null && kategori.SilindiMi)
-            {
-                kategori.SilindiMi = false;
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok(new { Message = "Ürün ve kategorisi aktif edildi." });
+            return Ok(new { Message = sonuc.Mesaj });
         }
 
         [HttpGet("arsivdekiler")]
         public async Task<ActionResult<IEnumerable<UrunlerDto>>> GetArsivdekiUrunler()
         {
-            var urunler = await _context.Urunler
-                .Include(u => u.Kategori)
-                .Where(u => u.SilindiMi)
-                .Select(u => new UrunlerDto
-                {
-                    ID = u.ID,
-                    Ad = u.Ad,
-                    Fiyat = u.Fiyat,
-                    Stok = u.Stok,
-                    KategoriAd = u.Kategori != null ? u.Kategori.Ad : "Kategorisiz",
-                })
-                .ToListAsync();
-
+            var urunler = await _urunlerService.GetArsivdekiUrunlerAsync();
             return Ok(urunler);
         }
 
         [HttpPost("{id}/resim-ekle")]
-        public async Task<IActionResult> ResimEkle(int id, IFormFile dosya) 
+        public async Task<IActionResult> ResimEkle(int id, IFormFile dosya)
         {
-            var urun = await _context.Urunler.Include(u => u.Resimler).FirstOrDefaultAsync(u => u.ID == id);
-            if (urun == null) return NotFound(new { Message = "Ürün bulunamadı." });
+            var sonuc = await _urunlerService.ResimEkleAsync(id, dosya);
 
-            var dosyaAdi = Guid.NewGuid().ToString() + Path.GetExtension(dosya.FileName);
-            var yol = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", dosyaAdi);
-
-            using (var stream = new FileStream(yol, FileMode.Create))
+            if (!sonuc.BasariliMi)
             {
-                await dosya.CopyToAsync(stream);
+                if (sonuc.Mesaj == "Ürün bulunamadı.")
+                    return NotFound(new { Message = sonuc.Mesaj });
+
+                return BadRequest(new { Message = sonuc.Mesaj });
             }
 
-            var yeniResim = new UrunResim
-            {
-                UrunId = id,
-                Url = "/images/" + dosyaAdi,
-                SiraNo = urun.Resimler.Count + 1
-            };
-
-            await _resimRepo.AddAsync(yeniResim);
-            await _resimRepo.SaveAsync();
-            return Ok(new { url = yeniResim.Url });
+            return Ok(sonuc.Data);
         }
 
         [HttpDelete("resim-sil/{resimId}")]
         public async Task<IActionResult> ResimSil(int resimId)
         {
-            var resim = await _resimRepo.GetByIdAsync(resimId);
-            if (resim == null) return NotFound("Resim bulunamadı.");
+            var sonuc = await _urunlerService.ResimSilAsync(resimId);
 
-            _resimRepo.Delete(resim);
-            await _resimRepo.SaveAsync();
-            return Ok("Resim silindi.");
+            if (!sonuc.BasariliMi)
+                return NotFound(sonuc.Mesaj);
+
+            return Ok(sonuc.Mesaj);
         }
 
         [HttpPut("resim-kapak-yap/{resimId}")]
         public async Task<IActionResult> ResimKapakYap(int resimId)
         {
-            var secilenResim = await _resimRepo.GetByIdAsync(resimId);
-            if (secilenResim == null) return NotFound();
+            var sonuc = await _urunlerService.ResimKapakYapAsync(resimId);
 
-            var tumResimler = await _context.UrunResimleri
-                .Where(r => r.UrunId == secilenResim.UrunId)
-                .ToListAsync();
+            if (!sonuc.BasariliMi)
+                return NotFound(sonuc.Mesaj);
 
-            foreach (var r in tumResimler) r.SiraNo = 2;
-            secilenResim.SiraNo = 1;
-
-            await _resimRepo.SaveAsync();
-            return Ok("Kapak resmi güncellendi.");
+            return Ok(sonuc.Mesaj);
         }
 
         [HttpGet("kategori/{kategoriId}")]
-        public async Task<ActionResult<IEnumerable<UrunlerDto>>> GetUrunlerByKategori(int kategoriId)
+        public async Task<IActionResult> GetUrunlerByKategori(int kategoriId)
         {
-            var kategoriVarMi = await _context.Kategoriler.AnyAsync(k => k.ID == kategoriId && !k.SilindiMi);
-            if (!kategoriVarMi)
-            {
-                return NotFound(new { Message = $" kategori sistemde bulunamadı." });
-            }
+            var sonuc = await _urunlerService.GetUrunlerByKategoriAsync(kategoriId);
 
-            var urunler = await _context.Urunler
-                .Include(u => u.Resimler)
-                .Include(u => u.Kategori)
-                .Where(u => u.KategoriId == kategoriId && !u.SilindiMi)
-                .Select(u => new UrunlerDto
+            if (!sonuc.BasariliMi)
+                return NotFound(new { Message = sonuc.Mesaj });
+
+            if (sonuc.Mesaj == "Bu kategoriye ait henüz bir ürün eklenmemiş.")
+            {
+                return Ok(new
                 {
-                    ID = u.ID,
-                    Ad = u.Ad,
-                    Fiyat = u.Fiyat,
-                    Stok = u.Stok,
-                    KategoriAd = u.Kategori != null ? u.Kategori.Ad : "Kategorisiz",
-                    Galeri = u.Resimler.OrderBy(r => r.SiraNo).Select(r => r.Url).ToList()
-                })
-                .ToListAsync();
-
-            if (urunler == null || urunler.Count == 0)
-            {
-                return Ok(new { Message = "Bu kategoriye ait henüz bir ürün eklenmemiş.", Data = new List<UrunlerDto>() });
+                    Message = sonuc.Mesaj,
+                    Data = sonuc.Data
+                });
             }
 
-            return Ok(urunler);
+            return Ok(sonuc.Data);
         }
 
         [HttpGet("ara/{kelime}")]
-        public async Task<ActionResult<IEnumerable<UrunlerDto>>> UrunAra(string kelime)
+        public async Task<IActionResult> UrunAra(string kelime)
         {
-            if (string.IsNullOrWhiteSpace(kelime) || kelime.Length < 2)
+            var sonuc = await _urunlerService.UrunAraAsync(kelime);
+
+            if (!sonuc.BasariliMi)
             {
-                return BadRequest(new { Message = "Arama yapmak için en az 2 karakter girmelisiniz." });
+                if (sonuc.Mesaj == "Arama yapmak için en az 2 karakter girmelisiniz.")
+                    return BadRequest(new { Message = sonuc.Mesaj });
+
+                return NotFound(new { Message = sonuc.Mesaj });
             }
 
-            var urunler = await _context.Urunler
-                .Include(u => u.Resimler)
-                .Include(u => u.Kategori)
-                .Where(u => u.Ad.ToLower().Contains(kelime.ToLower()) && !u.SilindiMi)
-                .Select(u => new UrunlerDto
-                {
-                    ID = u.ID,
-                    Ad = u.Ad,
-                    Fiyat = u.Fiyat,
-                    Stok = u.Stok,
-                    KategoriAd = u.Kategori != null ? u.Kategori.Ad : "Kategorisiz",
-                    Galeri = u.Resimler.OrderBy(r => r.SiraNo).Select(r => r.Url).ToList()
-                })
-                .ToListAsync();
-
-            if (urunler.Count == 0)
-            {
-                return NotFound(new { Message = $"'{kelime}' aramasına uygun bir ürün bulunamadı." });
-            }
-
-            return Ok(urunler);
+            return Ok(sonuc.Data);
         }
     }
 }
