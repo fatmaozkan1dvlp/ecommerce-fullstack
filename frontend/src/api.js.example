@@ -1,5 +1,0 @@
-// Bu dosya bir örnektir. 
-// Lütfen bu dosyanın adını 'api.js' olarak değiştirin 
-// ve aşağıdaki URL'yi kendi API adresinizle güncelleyin.
-
-export const API_URL = "http://localhost:5000/api";

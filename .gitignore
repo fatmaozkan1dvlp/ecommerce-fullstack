@@ -20,9 +20,6 @@ appsettings.Development.json
 .env
 .env.local
 
-# --- GİZLENECEK ÖZEL DOSYA ---
-**/src/api.js
-
 # --- IDE ve Sistem ---
 .vscode/
 Thumbs.db
