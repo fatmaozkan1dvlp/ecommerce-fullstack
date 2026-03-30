@@ -1,14 +1,27 @@
 using ECommerce.API.Data;
-using Microsoft.EntityFrameworkCore;
-using ECommerce.API.Services.Interfaces;
 using ECommerce.API.Services.Concrete;
-
+using ECommerce.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SENIN_COOOOK_UZUN_GIZLI_ANAHTARIN_BURAYA")),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 
 builder.Services.AddScoped<IKullanicilarService,KullanicilarService>();
@@ -49,5 +62,6 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();

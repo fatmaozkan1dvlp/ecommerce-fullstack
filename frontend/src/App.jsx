@@ -8,32 +8,43 @@ import KategoriEkle from './admin/KategoriEkle';
 import Arsivlenenler from './admin/Arsivlenenler';
 import UrunGuncelle from './admin/UrunGuncelle';
 import Siparisler from './admin/Siparisler';
+import Ayarlar from './admin/Ayarlar';
+import AdminRoute from './components/AdminRoute';
+import Login from './pages/Login';
+import Home from './pages/Home';
 
-//deneme olsun diye yaptık sonrasında anasayfa oluşturulacak
-const AnaSayfa = () => (
-    <div className="p-10 text-center">
-        <h1 className="text-4xl font-bold">Hoş Geldiniz! </h1>
-        <p className="mt-4">Burası müşterilerin göreceği vitrin sayfası.</p>
-        <Link to="/admin" className="text-blue-500 underline mt-10 inline-block">
-            Admin Paneline Git
-        </Link>
-    </div>
-);
+
+
+////deneme olsun diye yaptık sonrasında anasayfa oluşturulacak
+//const AnaSayfa = () => (
+//    <div className="p-10 text-center">
+//        <h1 className="text-4xl font-bold">Hoş Geldiniz! </h1>
+//        <p className="mt-4">Burası müşterilerin göreceği vitrin sayfası.</p>
+//        <Link to="/admin-login" className="text-blue-500 underline mt-10 inline-block">
+//            Admin Paneline Git
+//        </Link>
+//    </div>
+//);
 
 function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<AnaSayfa />} />
-                <Route path="/admin" element={<Dashboard />} />
-                <Route path="/admin/urunler" element={<Urunler />} />
-                <Route path="/admin/kategoriler" element={<Kategoriler />} />
-                <Route path="/admin/arsivlenenler" element={<Arsivlenenler />} />
-                <Route path="/admin/musteriler" element={<Musteriler />} />
-                <Route path="/admin/urun-ekle" element={<UrunEkle />} />
-                <Route path="/admin/kategori-ekle" element={<KategoriEkle />} />
-                <Route path="/admin/urun-guncelle/:id" element={<UrunGuncelle />} />
-                <Route path="/admin/siparisler/:durum" element={<Siparisler />} />
+ 
+                <Route path="/" element={<Home />} />
+                <Route path="/admin" element={<Login />} />
+
+                <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
+                <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />
+                <Route path="/admin/kategoriler" element={<AdminRoute><Kategoriler /></AdminRoute>} />
+                <Route path="/admin/arsivlenenler" element={<AdminRoute><Arsivlenenler /></AdminRoute>} />
+                <Route path="/admin/musteriler" element={<AdminRoute><Musteriler /></AdminRoute>} />
+                <Route path="/admin/urun-ekle" element={<AdminRoute><UrunEkle /></AdminRoute>} />
+                <Route path="/admin/kategori-ekle" element={<AdminRoute><KategoriEkle /></AdminRoute>} />
+                <Route path="/admin/urun-guncelle/:id" element={<AdminRoute><UrunGuncelle /></AdminRoute>} />
+                <Route path="/admin/siparisler/:durum" element={<AdminRoute><Siparisler /></AdminRoute>} />
+                <Route path="/admin/ayarlar" element={<AdminRoute><Ayarlar /></AdminRoute>} />
+                
             </Routes>
         </Router>
     );

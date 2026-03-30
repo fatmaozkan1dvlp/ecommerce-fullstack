@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Search, LayoutDashboard, ShoppingBag, Package, Settings, Layers, Users, Clock, Truck, CheckCircle, ChevronDown, XCircle, Boxes, Archive } from 'lucide-react';
+import { useState} from 'react';
+import { Link, useLocation,useNavigate } from 'react-router-dom';
+import { Menu, X, Sun, Moon, Search, LayoutDashboard, ShoppingBag, Package, Settings, Layers, Users, Clock, Truck, CheckCircle, ChevronDown, XCircle, Boxes, Archive, LogOut, AlertTriangle} from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [isDarkMode, setIsDarkMode] = useState(false);
     const [orderOpen, setOrderOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const isActive = (path) => location.pathname === path;
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const handleLogout = () => {
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("user");
+        navigate("/admin");
+    };
 
-    useEffect(() => {
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [isDarkMode]);
+    
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -32,20 +32,53 @@ const AdminLayout = ({ children }) => {
                     <span className="ml-4 text-xl font-bold text-blue-600 dark:text-blue-400">Admin Panel</span>
                 </div>
 
+                <div className="flex items-center gap-3">
                 
+
                 <button
-                    onClick={() => setIsDarkMode(!isDarkMode)}
-                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all duration-300 group"
                 >
-                    {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
-                </button>
+                    <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+                    <span>Çıkış Yap</span>
+                    </button>
+                </div>
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border dark:border-gray-700 animate-in fade-in zoom-in duration-200">
+                            <div className="flex justify-center mb-6">
+                                <div className="p-4 bg-red-100 dark:bg-red-900/30 rounded-3xl text-red-600">
+                                    <AlertTriangle size={32} />
+                                </div>
+                            </div>
+                            <h3 className="text-xl font-black text-center text-gray-800 dark:text-white mb-2">Emin misiniz?</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-center text-sm mb-8 font-medium">
+                                Oturumunuz kapatılacaktır. Devam etmek istiyor musunuz?
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 py-3 px-6 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                                >
+                                    Vazgeç
+                                </button>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex-1 py-3 px-6 rounded-2xl font-bold bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/30 transition-all"
+                                >
+                                    Evet, Çık
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             <aside className={`fixed top-16 left-0 z-40 w-64 h-[calc(100vh-64px)] transition-transform bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="h-full px-3 py-4 overflow-y-auto">
                     <ul className="space-y-2 font-medium">
                         <li>
-                            <Link to="/admin" className={`flex items-center p-2 rounded-lg group transition-colors ${isActive('/admin') ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <Link to="/admin/dashboard" className={`flex items-center p-2 rounded-lg group transition-colors ${isActive('/admin') ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                                 <LayoutDashboard size={20} className={isActive('/admin') ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-600'} />
                                 <span className="ml-3">Genel Bakış</span>
                             </Link>
@@ -147,12 +180,12 @@ const AdminLayout = ({ children }) => {
                                 <span className="ml-3">Arşivlenenler</span>
                             </Link>
                         </li>
-                        {/*<li>*/}
-                        {/*    <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">*/}
-                        {/*        <Settings size={20} className="text-gray-500" />*/}
-                        {/*        <span className="ml-3">Raporlar</span>*/}
-                        {/*    </a>*/}
-                        {/*</li>*/}
+                        <li>
+                            <Link to="/admin/ayarlar" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                                <Settings size={20} className="text-gray-500" />
+                                <span className="ml-3">Ayarlar</span>
+                            </Link>
+                        </li>
                     </ul>
                 </div>
             </aside>

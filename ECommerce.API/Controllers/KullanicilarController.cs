@@ -45,7 +45,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("profil-guncelle/{id}")]
-        public async Task<IActionResult> ProfilGuncelle(int id, KullaniciRegisterDto dto)
+        public async Task<IActionResult> ProfilGuncelle(int id, KullaniciGuncelleDto dto)
         {
             var sonuc = await _kullanicilarService.ProfilGuncelleAsync(id, dto);
 

@@ -80,13 +80,14 @@ namespace ECommerce.API.Services.Concrete
                 Message = "Giriş başarılı!",
                 AdSoyad = kullanici.AdSoyad,
                 Rol = kullanici.Rol,
+                EMail = kullanici.EMail,
                 Id = kullanici.ID
             };
 
             return (true, "Giriş başarılı!", sonuc);
         }
 
-        public async Task<(bool BasariliMi, string Mesaj)> ProfilGuncelleAsync(int id, KullaniciRegisterDto dto)
+        public async Task<(bool BasariliMi, string Mesaj)> ProfilGuncelleAsync(int id, KullaniciGuncelleDto dto)
         {
             var kullanici = await _context.Kullanicilar.FindAsync(id);
 
