@@ -1,119 +1,190 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../api';
 import AdminLayout from './AdminLayout';
 import { User, ShieldCheck, RefreshCcw } from 'lucide-react';
 
 const Ayarlar = () => {
-    // 1. Kullanıcıyı al ve konsola yazdır (Sorunu anlamak için F12 Console'a bak!)
-    const userJson = localStorage.getItem("user");
-    const initialUser = userJson ? JSON.parse(userJson) : {};
-    console.log("LocalStorage Verisi:", initialUser);
+    // 1. Veriyi çekme mantığını daha güvenli hale getirdik
+    const getAdminData = () => {
+        const adminJson = sessionStorage.getItem("adminUser");
+        return adminJson ? JSON.parse(adminJson) : null;
+    };
 
-    // 2. State'leri her türlü harf ihtimaline karşı sağlama alıyoruz
+    const [admin, setAdmin] = useState(getAdminData() || {});
+    const [loading, setLoading] = useState(false);
+
+    // 2. Form state'i
     const [formData, setFormData] = useState({
-        adSoyad: initialUser.AdSoyad || initialUser.adSoyad || initialUser.name || '',
-        // Burası kritik: EMail, eMail veya email... Hangisi varsa onu alacak
-        eMail: initialUser.EMail || initialUser.eMail || initialUser.email || '',
-        sifre: ''
+        adSoyad: admin?.adSoyad || "",
+        eMail: admin?.eMail || "",
+        sifre: ""
     });
 
-    const [displayUser, setDisplayUser] = useState(initialUser);
+    // Sayfa içindeki admin state'i değiştikçe formu da güncelle (Sync)
+    useEffect(() => {
+        const currentAdmin = getAdminData();
+        if (currentAdmin) {
+            setAdmin(currentAdmin);
+            setFormData(prev => ({
+                ...prev,
+                adSoyad: currentAdmin.adSoyad,
+                eMail: currentAdmin.eMail
+            }));
+        }
+    }, []);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        // Backend'den gelen input name'leri (AdSoyad, EMail) 
+        // state'teki (adSoyad, eMail) ile eşleştiriyoruz
+        const stateName = name.charAt(0).toLowerCase() + name.slice(1);
+
+        setFormData((prev) => ({
+            ...prev,
+            [stateName]: value
+        }));
+    };
 
     const handleGuncelle = async (e) => {
         e.preventDefault();
+        if (loading) return;
+        setLoading(true);
+
         try {
-            const userId = displayUser.ID || displayUser.Id || displayUser.id;
+            const userId = admin.id || admin.Id; // İki ihtimali de kontrol et
+
+            if (!userId) {
+                alert("Kullanıcı ID bulunamadı!");
+                return;
+            }
 
             const guncellenecekVeri = {
                 adSoyad: formData.adSoyad,
-                eMail: formData.eMail, // Senin DTO'daki property ismiyle aynı olmalı
-                sifre: formData.sifre === "" ? null : formData.sifre
+                eMail: formData.eMail,
+                sifre: formData.sifre.trim() === "" ? null : formData.sifre
             };
 
+            // API İsteği
             await api.put(`/Kullanicilar/profil-guncelle/${userId}`, guncellenecekVeri);
 
-            // Başarılı olursa hem ekranı hem hafızayı tazele
-            const updated = { ...displayUser, ...guncellenecekVeri };
-            localStorage.setItem("user", JSON.stringify(updated));
-            setDisplayUser(updated);
-            setFormData(prev => ({ ...prev, sifre: '' }));
+            // 3. Mevcut admin objesini bozmadan güncelle
+            const updatedAdmin = {
+                ...admin,
+                adSoyad: guncellenecekVeri.adSoyad,
+                eMail: guncellenecekVeri.eMail
+            };
+
+            // Hem state'i hem storage'ı güncelle (Anlık yansıma sağlar)
+            setAdmin(updatedAdmin);
+            sessionStorage.setItem("adminUser", JSON.stringify(updatedAdmin));
+
+            // Şifre alanını temizle
+            setFormData(prev => ({ ...prev, sifre: "" }));
 
             alert("Bilgileriniz başarıyla güncellendi! ✅");
+
+            // Opsiyonel: Sayfayı yenilemeden verilerin her yerde güncellenmesi için 
+            // window.dispatchEvent(new Event("storage")); // Eğer başka bileşenler de dinliyorsa
+
         } catch (err) {
-            console.error("Hata detayı:", err.response?.data);
-            alert("Güncelleme başarısız!");
+            console.error("Güncelleme Hatası:", err);
+            const mesaj = err.response?.data?.message || "Güncelleme başarısız!";
+            alert(mesaj);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <AdminLayout>
             <div className="flex flex-col lg:flex-row gap-8">
-                {/* SOL FORM */}
                 <div className="flex-1">
-                    <h2 className="text-2xl font-black mb-8 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                        <RefreshCcw className="text-blue-500" /> Profilini Düzenle
+                    <h2 className="text-2xl font-black mb-8 dark:text-white uppercase tracking-tight flex items-center gap-2 italic">
+                        <RefreshCcw className={`text-blue-500 ${loading ? 'animate-spin' : ''}`} /> Profil Ayarları
                     </h2>
+
                     <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-sm border dark:border-gray-700">
                         <form onSubmit={handleGuncelle} className="space-y-6">
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-2">Ad Soyad</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-2 tracking-widest">Ad Soyad</label>
                                 <input
-                                    className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                    type="text"
+                                    name="AdSoyad" // handleChange içindeki stateName ile eşleşir
+                                    className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 dark:text-white font-bold"
                                     value={formData.adSoyad}
-                                    onChange={(e) => setFormData({ ...formData, adSoyad: e.target.value })}
+                                    onChange={handleChange}
                                     required
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-2">E-Posta</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-2 tracking-widest">E-Posta</label>
                                 <input
                                     type="email"
-                                    className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                    name="EMail"
+                                    className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 dark:text-white font-bold text-blue-600"
                                     value={formData.eMail}
-                                    onChange={(e) => setFormData({ ...formData, eMail: e.target.value })}
+                                    onChange={handleChange}
                                     required
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-2">Yeni Şifre (İsteğe Bağlı)</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 ml-2 tracking-widest">Yeni Şifre (Güvenlik)</label>
                                 <input
                                     type="password"
+                                    name="Sifre"
                                     placeholder="Değiştirmek istemiyorsanız boş bırakın"
-                                    className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
+                                    className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 dark:text-white font-bold"
                                     value={formData.sifre}
-                                    onChange={(e) => setFormData({ ...formData, sifre: e.target.value })}
+                                    onChange={handleChange}
                                 />
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
-                                GÜNCELLEMELERİ KAYDET
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 disabled:opacity-50 flex justify-center items-center gap-2 uppercase tracking-widest text-sm italic"
+                            >
+                                {loading ? "İşleniyor..." : "DEĞİŞİKLİKLERİ UYGULA"}
                             </button>
                         </form>
                     </div>
                 </div>
 
-                {/* SAĞ KART */}
+                {/* Sağ Taraf: Mevcut Kart Görünümü */}
                 <div className="w-full lg:w-80">
-                    <h2 className="text-2xl font-black mb-8 dark:text-white uppercase tracking-tight">Mevcut Profil</h2>
-                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
-                        <div className="relative z-10 space-y-4">
-                            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
-                                <User size={32} />
+                    <h2 className="text-2xl font-black mb-8 dark:text-white uppercase tracking-tight italic">Kimlik</h2>
+                    <div className="bg-gradient-to-br from-blue-600 to-indigo-800 p-8 rounded-[2.5rem] shadow-2xl text-white relative overflow-hidden group">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+
+                        <div className="relative z-10 space-y-5">
+                            <div className="w-14 h-14 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-inner">
+                                <User size={28} />
                             </div>
+
                             <div>
-                                <p className="text-blue-100 text-[10px] font-bold uppercase tracking-widest opacity-70">Yönetici Adı</p>
-                                <h3 className="text-xl font-black truncate">
-                                    {displayUser.AdSoyad || displayUser.adSoyad || displayUser.name}
+                                <p className="text-blue-200 text-[9px] font-black uppercase tracking-[0.2em] mb-1">Yetkili Personel</p>
+                                <h3 className="text-xl font-black truncate tracking-tight uppercase">
+                                    {admin.adSoyad || "Yükleniyor..."}
                                 </h3>
                             </div>
+
                             <div>
-                                <p className="text-blue-100 text-[10px] font-bold uppercase tracking-widest opacity-70">E-Posta Adresi</p>
-                                <p className="text-sm font-medium opacity-90 truncate italic">
-                                    {displayUser.EMail || displayUser.eMail || displayUser.email}
+                                <p className="text-blue-200 text-[9px] font-black uppercase tracking-[0.2em] mb-1">İletişim Kanalı</p>
+                                <p className="text-sm font-bold opacity-90 truncate italic underline decoration-blue-400">
+                                    {admin.eMail || "mail@admin.com"}
                                 </p>
                             </div>
-                            <div className="pt-4 border-t border-white/10 flex items-center gap-2">
-                                <ShieldCheck size={16} className="text-green-400" />
-                                <span className="text-[10px] font-bold uppercase tracking-tighter">Yetki: {displayUser.Rol || displayUser.rol}</span>
+
+                            <div className="pt-5 border-t border-white/20 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck size={14} className="text-green-400" />
+                                    <span className="text-[10px] font-black uppercase italic tracking-widest text-green-400">AKTİF</span>
+                                </div>
+                                <span className="text-[10px] font-black bg-black/20 px-3 py-1 rounded-lg">
+                                    {admin.rol || "ADMIN"}
+                                </span>
                             </div>
                         </div>
                     </div>

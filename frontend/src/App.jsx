@@ -12,19 +12,8 @@ import Ayarlar from './admin/Ayarlar';
 import AdminRoute from './components/AdminRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
-
-
-
-////deneme olsun diye yaptık sonrasında anasayfa oluşturulacak
-//const AnaSayfa = () => (
-//    <div className="p-10 text-center">
-//        <h1 className="text-4xl font-bold">Hoş Geldiniz! </h1>
-//        <p className="mt-4">Burası müşterilerin göreceği vitrin sayfası.</p>
-//        <Link to="/admin-login" className="text-blue-500 underline mt-10 inline-block">
-//            Admin Paneline Git
-//        </Link>
-//    </div>
-//);
+import KullaniciGiris from './Pages/KullaniciGiris';
+import KullaniciKayit from './Pages/KullaniciKayit';
 
 function App() {
     return (
@@ -33,6 +22,8 @@ function App() {
  
                 <Route path="/" element={<Home />} />
                 <Route path="/admin" element={<Login />} />
+                <Route path="/giris" element={<KullaniciGiris />} />
+                <Route path="/kayit" element={<KullaniciKayit />} />
 
                 <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
                 <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />
