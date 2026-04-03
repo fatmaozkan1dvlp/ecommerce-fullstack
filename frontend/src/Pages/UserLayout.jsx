@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api';
 import { ShoppingBag, User, Search, X, ArrowRight, Instagram, Twitter, Facebook, LogOut } from 'lucide-react';
 
 function UserLayout({ children }) {
+    const [categories, setCategories] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false); 
     const navigate = useNavigate();
@@ -23,18 +25,24 @@ function UserLayout({ children }) {
         return null;
     });
 
+    useEffect(() => {
+        const getKategoriler = async () => {
+            try {
+                const res = await api.get('/Kategoriler');
+                setCategories(res.data);
+            } catch (error) {
+                console.error("Kategoriler çekilemedi:", error);
+            }
+        };
+
+        getKategoriler();
+    }, []);
+
     const handleLogout = () => {
         localStorage.removeItem("user");
         setUser(null);
         navigate('/');
     };
-
-    const categories = [
-        { name: '3D Dekoratif Obje', count: '124 Ürün' },
-        { name: 'Minimalist Aydınlatma', count: '42 Ürün' },
-        { name: 'Modern Tablolar', count: '86 Ürün' },
-        { name: 'Özel Tasarım Hediyelik', count: '55 Ürün' },
-    ];
 
     return (
         <div className="min-h-screen bg-[#FDFCFB] dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-500 overflow-x-hidden">
@@ -141,15 +149,18 @@ function UserLayout({ children }) {
                         <nav className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
                             {categories.map((cat, i) => (
                                 <Link
-                                    key={i}
-                                    to="#"
+                                    key={cat.id || i}
+                                    to={`/kategori/${cat.id || cat.ID}`}
+                                    onClick={() => setIsMenuOpen(false)} 
                                     className="group flex items-center p-4 rounded-2xl hover:bg-amber-50 dark:hover:bg-amber-900/10 active:bg-amber-100 transition-all border border-transparent hover:border-amber-100 dark:hover:border-amber-800"
                                 >
                                     <div className="flex-1">
                                         <h4 className="text-base font-bold text-gray-800 dark:text-gray-100 group-hover:text-amber-600 transition-colors">
-                                            {cat.name}
+                                            {cat.ad || cat.Ad} 
                                         </h4>
-                                        <p className="text-[9px] text-gray-400 mt-0.5 uppercase tracking-wider">{cat.count}</p>
+                                        <p className="text-[9px] text-gray-400 mt-0.5 uppercase tracking-wider">
+                                            {cat.urunSayisi || "Koleksiyonu İncele"}
+                                        </p>
                                     </div>
                                     <ArrowRight size={16} className="text-amber-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                                 </Link>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
+import imageCompression from 'browser-image-compression';
 import AdminLayout from './AdminLayout';
 import { ChevronLeft, Save, Package, List, Image as ImageIcon, X, Plus, AlertCircle, Info } from 'lucide-react';
 
@@ -22,13 +23,41 @@ const UrunEkle = () => {
             .catch(err => console.error("Kategoriler yüklenemedi:", err));
     }, []);
 
-    const resimSec = (e) => {
+    const resimSec = async (e) => {
         const dosyalar = Array.from(e.target.files);
+
         if (secilenResimler.length + dosyalar.length > 5) {
             alert("Maksimum 5 fotoğraf ekleyebilirsiniz!");
             return;
         }
-        setSecilenResimler([...secilenResimler, ...dosyalar]);
+
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1280,
+            useWebWorker: true,
+            fileType: 'image/jpeg' 
+        };
+
+        try {
+            const islenmisDosyalar = [];
+
+            for (const dosya of dosyalar) {
+                const compressedFile = await imageCompression(dosya, options);
+
+                const yeniDosya = new File(
+                    [compressedFile],
+                    `${Date.now()}-${dosya.name.split('.')[0]}.jpg`,
+                    { type: 'image/jpeg' }
+                );
+
+                islenmisDosyalar.push(yeniDosya);
+            }
+
+            setSecilenResimler([...secilenResimler, ...islenmisDosyalar]);
+        } catch (error) {
+            console.error("Resim işleme hatası:", error);
+            alert("Bazı resimler işlenemedi!");
+        }
     };
 
     const resimKaldir = (index) => {
@@ -37,7 +66,13 @@ const UrunEkle = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        const urunVerisi = {
+            ad: ad,
+            fiyat: parseFloat(fiyat),
+            stok: parseInt(stok),
+            kategoriId: parseInt(kategoriId),
+            aciklama: aciklama
+        };
         if (Number(fiyat) <= 0 || Number(stok) <= 0) {
             alert("Fiyat ve Stok değerleri 0'dan büyük olmalıdır!");
             return;
@@ -49,13 +84,7 @@ const UrunEkle = () => {
 
         setYukleniyor(true);
 
-        const urunVerisi = {
-            ad: ad,
-            fiyat: parseInt(fiyat),
-            stok: parseInt(stok),
-            kategoriId: parseInt(kategoriId),
-            aciklama: aciklama
-        };
+       
 
         try {
             const urunRes = await api.post(`/Urunler`, urunVerisi);
@@ -120,7 +149,7 @@ const UrunEkle = () => {
                                     <input
                                         type="text" required value={ad} onChange={(e) => setAd(e.target.value)}
                                         className="w-full p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900/50 dark:text-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium"
-                                        placeholder="Örn: 3D Yazıcı Başlığı"
+                                        placeholder="Ürün Adı Giriniz"
                                     />
                                 </div>
 
@@ -141,7 +170,7 @@ const UrunEkle = () => {
                                     <label className="block text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 ml-1">Satış Fiyatı (₺)</label>
                                     <input
                                         type="number" required value={fiyat} min="1"
-                                        onChange={(e) => setFiyat(e.target.value.replace(/^0+/, ''))}
+                                        onChange={(e) => setFiyat(e.target.value)}
                                         className="w-full p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900/50 dark:text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-black text-blue-600"
                                         placeholder="0.00"
                                     />

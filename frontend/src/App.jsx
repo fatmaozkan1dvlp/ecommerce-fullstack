@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import KullaniciGiris from './Pages/KullaniciGiris';
 import KullaniciKayit from './Pages/KullaniciKayit';
+import KategoriUrunleri from './Pages/KategoriUrunleri';
 
 function App() {
     return (
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/admin" element={<Login />} />
                 <Route path="/giris" element={<KullaniciGiris />} />
                 <Route path="/kayit" element={<KullaniciKayit />} />
+                <Route path="/kategori/:id" element={<KategoriUrunleri />} />
 
                 <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
                 <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />

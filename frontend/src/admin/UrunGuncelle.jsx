@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../api';
+import imageCompression from 'browser-image-compression';
+import api, { IMG_URL } from '../api';
 import AdminLayout from './AdminLayout';
 import { ChevronLeft, Save, Package, List, Image as ImageIcon, X, Plus, Star, Trash2, Info, AlertCircle } from 'lucide-react';
 
@@ -19,7 +20,7 @@ const UrunGuncelle = () => {
     const [aciklama, setAciklama] = useState('');
     const [mevcutResimler, setMevcutResimler] = useState([]);
     const [yeniDosyalar, setYeniDosyalar] = useState([]);
-    const [kapakResimId, setKapakResimId] = useState(null); 
+    const [kapakResimId, setKapakResimId] = useState(null);
 
     useEffect(() => {
         const urunVerileriniGetir = async () => {
@@ -80,21 +81,50 @@ const UrunGuncelle = () => {
 
             alert("Ürün başarıyla güncellendi!");
             navigate('/admin/urunler');
-        } catch (err) {
-            console.error("Güncelleme hatası:", err.response?.data);
-            alert("Güncelleme başarısız!");
+        } catch  {
+            if (stok !== null) alert("Güncelleme başarısız!  Stok kısmı boş kalamaz bir değer seçiniz");
+
+            
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const resimSec = (e) => {
+    const resimSec = async (e) => {
         const dosyalar = Array.from(e.target.files);
+
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1280,
+            useWebWorker: true,
+            fileType: 'image/jpeg'
+        };
+
         if (mevcutResimler.length + yeniDosyalar.length + dosyalar.length > 5) {
             alert("Maksimum 5 fotoğraf olabilir!");
             return;
         }
-        setYeniDosyalar([...yeniDosyalar, ...dosyalar]);
+
+        try {
+            const islenmisDosyalar = [];
+
+            for (const dosya of dosyalar) {
+                const compressedFile = await imageCompression(dosya, options);
+
+                const yeniDosya = new File(
+                    [compressedFile],
+                    `${Date.now()}-${dosya.name.split('.')[0]}.jpg`,
+                    { type: 'image/jpeg' }
+                );
+
+                islenmisDosyalar.push(yeniDosya);
+            }
+
+            setYeniDosyalar([...yeniDosyalar, ...islenmisDosyalar]);
+
+        } catch (error) {
+            console.error("Resim işleme hatası:", error);
+        }
     };
 
     const onMakeCoverLocal = (rId) => {
@@ -102,12 +132,27 @@ const UrunGuncelle = () => {
     };
 
     const onDeleteDBResim = async (rId) => {
+        const toplamResimSayisi = mevcutResimler.length + yeniDosyalar.length;
+
+        if (toplamResimSayisi <= 1) {
+            alert("En az 1 fotoğraf kalmalıdır!");
+            return;
+        }
+
         if (!window.confirm("Bu resim veritabanından silinecek. Emin misiniz?")) return;
+
         try {
             await api.delete(`/Urunler/resim-sil/${rId}`);
             setMevcutResimler(prev => prev.filter(r => r.id !== rId));
-            if (kapakResimId === rId) setKapakResimId(null);
-        } catch (err) { console.error(err); alert("Silinemedi."); }
+
+            if (kapakResimId === rId) {
+                const kalanResimler = mevcutResimler.filter(r => r.id !== rId);
+                setKapakResimId(kalanResimler.length > 0 ? kalanResimler[0].id : null);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Silinemedi.");
+        }
     };
 
     if (yukleniyor) return (
@@ -159,7 +204,7 @@ const UrunGuncelle = () => {
                                         </div>
                                         <div>
                                             <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-2">Stok</label>
-                                            <input type="number" value={stok} onChange={e => setStok(e.target.value)}
+                                            <input type="number" value={stok} onChange={e => setStok(Math.max(0, Number(e.target.value)))}
                                                 className="w-full p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900 border-none focus:ring-4 focus:ring-blue-500/10 dark:text-white font-black" />
                                         </div>
                                     </div>
@@ -182,7 +227,7 @@ const UrunGuncelle = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 {mevcutResimler.map((img) => (
                                     <div key={img.id} className={`relative aspect-square rounded-2xl overflow-hidden group border-2 transition-all ${kapakResimId === img.id ? 'border-amber-500 shadow-lg shadow-amber-500/20' : 'border-transparent'}`}>
-                                        <img src={`https://localhost:7126${img.url}`} className="w-full h-full object-cover" />
+                                        <img src={`${IMG_URL}${img.url}`} className="w-full h-full object-cover" alt="" />
 
                                         <div className="absolute inset-0 bg-black/40 md:opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                                             <button type="button" onClick={() => onMakeCoverLocal(img.id)} className={`p-2 rounded-xl transition-all ${kapakResimId === img.id ? 'bg-amber-500 text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
@@ -200,8 +245,15 @@ const UrunGuncelle = () => {
 
                                 {yeniDosyalar.map((file, index) => (
                                     <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-blue-400/50 shadow-sm">
-                                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-60" />
-                                        <button type="button" onClick={() => setYeniDosyalar(yeniDosyalar.filter((_, i) => i !== index))} className="absolute top-1 right-1 p-1 bg-gray-800 text-white rounded-full"><X size={10} /></button>
+                                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-60" alt="" />
+                                        <button type="button" onClick={() => {
+                                            const toplamResimSayisi = mevcutResimler.length + yeniDosyalar.length;
+                                            if (toplamResimSayisi <= 1) {
+                                                alert("En az 1 fotoğraf kalmalıdır!");
+                                                return;
+                                            }
+                                            setYeniDosyalar(yeniDosyalar.filter((_, i) => i !== index));
+                                        }} className="absolute top-1 right-1 p-1 bg-gray-800 text-white rounded-full"><X size={10} /></button>
                                         <div className="absolute bottom-1 left-1 bg-blue-500 text-[7px] text-white px-1.5 py-0.5 rounded font-black uppercase">Yeni</div>
                                     </div>
                                 ))}
