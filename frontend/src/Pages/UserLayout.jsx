@@ -11,7 +11,8 @@ function UserLayout({ children }) {
 
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("user");
-        if (savedUser) {
+        const token = localStorage.getItem("token");
+        if (savedUser && token) {
             try {
                 const parsedUser = JSON.parse(savedUser);
                 const userRole = parsedUser?.rol || parsedUser?.Rol;
@@ -34,14 +35,16 @@ function UserLayout({ children }) {
                 console.error("Kategoriler çekilemedi:", error);
             }
         };
-
+      
+       
         getKategoriler();
     }, []);
 
     const handleLogout = () => {
+        localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);
-        navigate('/');
+        navigate("/");
     };
 
     return (

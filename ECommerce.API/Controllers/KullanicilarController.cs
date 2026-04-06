@@ -16,6 +16,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetMusteriler()
         {
             var musteriler = await _kullanicilarService.GetMusterilerAsync();

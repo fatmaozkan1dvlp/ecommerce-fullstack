@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api, { IMG_URL } from '../api';
-import { ShoppingBag ,Heart} from 'lucide-react';
+import { ShoppingBag, Heart, ArrowDownUp, ChevronDown } from 'lucide-react';
 import UserLayout from './UserLayout';
 
 const KategoriUrunleri = () => {
@@ -37,13 +37,38 @@ const KategoriUrunleri = () => {
     }, [id]);
 
     return (
-        <UserLayout>
+        <UserLayout> 
             <div className="max-w-[1800px] mx-auto px-3 md:px-10 py-6 md:py-12">
-                <div className="mb-10">
-                    <span className="text-amber-600 font-black uppercase tracking-widest text-[10px]">Koleksiyon</span>
+
+                
+
+                <div className="mb-8">
                     <h2 className="text-4xl font-black uppercase italic mt-2 text-gray-900">
                         {kategoriAd || "Ürünler"}
                     </h2>
+                </div>
+                <div className="flex items-center justify-between pb-6 mb-8 border-b border-gray-100 dark:border-gray-800 gap-3">
+                    <div className="flex items-center gap-3">
+
+                        <span className="hidden sm:inline text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                            {urunler.length} Ürün
+                        </span>
+                    </div>
+
+                    <div className="relative group">
+                        <button className="flex items-center gap-4 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 hover:border-amber-600 transition-all active:scale-95">
+                            <div className="flex items-center gap-2">
+                                <ArrowDownUp size={16} className="text-amber-600" />
+                                <span>Sıralama</span>
+                            </div>
+                            <ChevronDown size={14} className="text-gray-400 group-hover:rotate-180 transition-transform" />
+                        </button>
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 p-1.5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all pointer-events-none group-hover:pointer-events-auto z-50">
+                            {['Önerilen', 'Fiyat: Artan', 'Fiyat: Azalan', 'En Yeniler'].map(item => (
+                                <button key={item} className="w-full text-left text-[10px] px-4 py-2.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/10 text-gray-600 dark:text-gray-300 font-bold transition-colors uppercase">{item}</button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 {yukleniyor ? (

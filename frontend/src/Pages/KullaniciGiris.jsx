@@ -23,13 +23,17 @@ const KullaniciGiris = () => {
 
             const userData = response.data;
             const userRole = userData?.rol || userData?.Rol;
+            const token = userData?.token || userData?.Token;
 
             if (userRole === "Admin") {
                 setError("Bu giriş ekranı sadece müşteriler içindir.");
+                setLoading(false);
                 return;
             }
+            
 
-            if (userData?.message === "Giriş başarılı!" || userRole === "Musteri") {
+            if ((userData?.message === "Giriş başarılı!" || userRole === "Musteri") && token) {
+                localStorage.setItem("token",token);
                 localStorage.setItem("user", JSON.stringify(userData));
                 navigate("/");
             } else {
@@ -37,7 +41,7 @@ const KullaniciGiris = () => {
             }
 
         } catch (err) {
-            const mesaj = err.response?.data?.message || err.response?.data?.mesaj || "Bağlantı hatası.";
+            const mesaj = err.response?.data?.message || err.response?.data?.mesaj || err.response?.data || "Bağlantı hatası.";
             setError(mesaj);
         } finally {
             setLoading(false);

@@ -1,4 +1,8 @@
-﻿using ECommerce.API.Data;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using ECommerce.API.Data;
 using ECommerce.API.DTOs;
 using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
@@ -9,11 +13,40 @@ namespace ECommerce.API.Services.Concrete
     public class KullanicilarService : IKullanicilarService
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public KullanicilarService(AppDbContext context)
+        public KullanicilarService(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
+
+        private string GenerateJwtToken(Kullanici kullanici)
+        {
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, kullanici.ID.ToString()),
+            new Claim(ClaimTypes.Email, kullanici.EMail),
+            new Claim(ClaimTypes.Name, kullanici.AdSoyad),
+            new Claim(ClaimTypes.Role, kullanici.Rol) 
+        };
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
 
         public async Task<List<MusteriListeDto>> GetMusterilerAsync()
         {
@@ -75,9 +108,12 @@ namespace ECommerce.API.Services.Concrete
             if (!sifreDogruMu)
                 return (false, "Hatalı şifre.", null);
 
+            var token = GenerateJwtToken(kullanici);
+
             var sonuc = new
             {
                 Message = "Giriş başarılı!",
+                Token = token,
                 AdSoyad = kullanici.AdSoyad,
                 Rol = kullanici.Rol,
                 EMail = kullanici.EMail,

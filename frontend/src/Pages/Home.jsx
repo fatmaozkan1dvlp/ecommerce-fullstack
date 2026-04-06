@@ -34,10 +34,10 @@ const Home = () => {
             <div className="max-w-[1800px] mx-auto px-3 md:px-10 py-6 md:py-12">
                 <div className="flex items-center justify-between pb-6 mb-8 border-b border-gray-100 dark:border-gray-800 gap-3">
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 hover:border-amber-600 transition-all active:scale-95">
-                            <ListFilter size={16} className="text-amber-600" />
-                            Filtre
-                        </button>
+                        {/*<button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 hover:border-amber-600 transition-all active:scale-95">*/}
+                        {/*    <ListFilter size={16} className="text-amber-600" />*/}
+                        {/*    Filtre*/}
+                        {/*</button>*/}
                         <span className="hidden sm:inline text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                             {urunler.length} Ürün
                         </span>

@@ -24,17 +24,27 @@ const Login = () => {
 
             const userData = response.data;
             const userRole = userData?.rol || userData?.Rol;
+            const token = userData?.token || userData?.Token;
 
             if (userRole !== "Admin") {
                 setHata("Bu panele sadece admin kullanıcılar giriş yapabilir.");
+                setLoading(false);
                 return;
             }
+            if (!token) {
+                setHata("Sistemsel bir hata oluştu (Token alınamadı).");
+                setLoading(false);
+                return;
+            }
+
+            localStorage.setItem("token", token);
 
             sessionStorage.setItem("adminUser", JSON.stringify(userData));
             navigate("/admin/dashboard");
         } catch (error) {
             console.error(error);
-            setHata("Giriş bilgileri hatalı veya sunucu yanıt vermiyor.");
+            const mesaj = error.response?.data || "Giriş bilgileri hatalı veya sunucu yanıt vermiyor.";
+            setHata(mesaj);
         } finally {
             setLoading(false);
         }
