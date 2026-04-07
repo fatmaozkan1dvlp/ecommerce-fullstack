@@ -16,17 +16,19 @@ import KullaniciGiris from './Pages/KullaniciGiris';
 import KullaniciKayit from './Pages/KullaniciKayit';
 import KategoriUrunleri from './Pages/KategoriUrunleri';
 
+
 function App() {
     return (
+        
         <Router>
             <Routes>
- 
+                
                 <Route path="/" element={<Home />} />
+                <Route path="/kategori/:id" element={<KategoriUrunleri />} />
+                
                 <Route path="/admin" element={<Login />} />
                 <Route path="/giris" element={<KullaniciGiris />} />
                 <Route path="/kayit" element={<KullaniciKayit />} />
-                <Route path="/kategori/:id" element={<KategoriUrunleri />} />
-
                 <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
                 <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />
                 <Route path="/admin/kategoriler" element={<AdminRoute><Kategoriler /></AdminRoute>} />
@@ -39,7 +41,8 @@ function App() {
                 <Route path="/admin/ayarlar" element={<AdminRoute><Ayarlar /></AdminRoute>} />
                 
             </Routes>
-        </Router>
+            </Router>
+        
     );
 }
 

@@ -7,6 +7,7 @@ using ECommerce.API.DTOs;
 using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace ECommerce.API.Services.Concrete
 {
@@ -71,8 +72,17 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<(bool BasariliMi, string Mesaj)> RegisterAsync(KullaniciRegisterDto dto)
         {
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            if (!emailRegex.IsMatch(dto.EMail))
+                return (false, "Geçersiz bir e-posta formatı girdiniz.");
+
+            if (dto.Telefon.Length != 11 || !dto.Telefon.All(char.IsDigit))
+                return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır (Örn: 05xxxxxxxxx).");
             bool emailVarMi = await _context.Kullanicilar
                 .AnyAsync(u => u.EMail == dto.EMail);
+            // Şifre uzunluk kontrolü (Backend güvenliği için şart)
+            if (dto.Sifre.Length < 6)
+                return (false, "Şifre en az 6 karakter olmalıdır.");
 
             if (emailVarMi)
                 return (false, "Bu email zaten kayıtlı.");
@@ -84,6 +94,7 @@ namespace ECommerce.API.Services.Concrete
                 AdSoyad = dto.AdSoyad,
                 EMail = dto.EMail,
                 SifreHash = passwordHash,
+                Telefon=dto.Telefon,
                 Rol = "Musteri",
                 OlusturmaT = DateTime.Now,
                 SilindiMi = false

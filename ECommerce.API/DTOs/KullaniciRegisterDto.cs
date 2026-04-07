@@ -5,5 +5,6 @@
         public string AdSoyad { get; set; }
         public string EMail { get; set; }
         public string Sifre { get; set; }
+        public string? Telefon { get; set; }
     }
 }

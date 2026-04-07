@@ -3,11 +3,13 @@ import { ListFilter, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Shoppi
 import UserLayout from './UserLayout';
 import api, { IMG_URL } from '../api';
 
+
 const Home = () => {
     const [urunler, setUrunler] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const urunPerPage = 12; 
+    const urunPerPage = 12;
+    
 
     useEffect(() => {
         const fetchUrunler = async () => {
@@ -84,7 +86,7 @@ const Home = () => {
                                         />
 
                                         <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">
-                                            <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-amber-600 transition-all active:scale-90 flex items-center justify-center">
+                                            <button  className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-amber-600 transition-all active:scale-90 flex items-center justify-center">
                                                 <ShoppingBag size={18} />
                                             </button>
                                             <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-red-500 transition-all active:scale-90 flex items-center justify-center">
