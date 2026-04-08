@@ -1,6 +1,7 @@
 ﻿using ECommerce.API.DTOs;
 using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
@@ -24,6 +25,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Urun>> PostUrun([FromBody] Urun urun)
         {
             var yeniUrun = await _urunlerService.PostUrunAsync(urun);
@@ -42,6 +44,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UrunGuncelle(int id, [FromBody] UrunGuncelleDto dto)
         {
             var sonuc = await _urunlerService.UrunGuncelleAsync(id, dto);
@@ -53,6 +56,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("arsivle/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UrunArsivle(int id)
         {
             var sonuc = await _urunlerService.UrunArsivleAsync(id);
@@ -64,6 +68,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpDelete("kalici-sil/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UrunKaliciSil(int id)
         {
             var sonuc = await _urunlerService.UrunKaliciSilAsync(id);
@@ -80,6 +85,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("arsivden-cikar/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UrunArsivdenCikar(int id)
         {
             var sonuc = await _urunlerService.UrunArsivdenCikarAsync(id);
@@ -91,6 +97,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet("arsivdekiler")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<UrunlerDto>>> GetArsivdekiUrunler()
         {
             var urunler = await _urunlerService.GetArsivdekiUrunlerAsync();
@@ -98,6 +105,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPost("{id}/resim-ekle")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ResimEkle(int id, IFormFile dosya)
         {
             var sonuc = await _urunlerService.ResimEkleAsync(id, dosya);
@@ -114,6 +122,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpDelete("resim-sil/{resimId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ResimSil(int resimId)
         {
             var sonuc = await _urunlerService.ResimSilAsync(resimId);
@@ -125,6 +134,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("resim-kapak-yap/{resimId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ResimKapakYap(int resimId)
         {
             var sonuc = await _urunlerService.ResimKapakYapAsync(resimId);

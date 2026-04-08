@@ -12,9 +12,11 @@ import Ayarlar from './admin/Ayarlar';
 import AdminRoute from './components/AdminRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import KullaniciGiris from './Pages/KullaniciGiris';
-import KullaniciKayit from './Pages/KullaniciKayit';
-import KategoriUrunleri from './Pages/KategoriUrunleri';
+import KullaniciGiris from './pages/KullaniciGiris';
+import KullaniciKayit from './pages/KullaniciKayit';
+import KategoriUrunleri from './pages/KategoriUrunleri';
+import Profil from './pages/Profil';
+import ProfilGuncelle from './pages/ProfilGuncelle';
 
 
 function App() {
@@ -29,6 +31,10 @@ function App() {
                 <Route path="/admin" element={<Login />} />
                 <Route path="/giris" element={<KullaniciGiris />} />
                 <Route path="/kayit" element={<KullaniciKayit />} />
+                <Route path="/profil" element={<Profil />} />
+                <Route path="/profil-guncelle" element={<ProfilGuncelle />} />
+
+
                 <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
                 <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />
                 <Route path="/admin/kategoriler" element={<AdminRoute><Kategoriler /></AdminRoute>} />

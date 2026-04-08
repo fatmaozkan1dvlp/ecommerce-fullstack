@@ -1,5 +1,6 @@
 ﻿using ECommerce.API.DTOs;
 using ECommerce.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
@@ -31,6 +32,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("durum-guncelle")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DurumGuncelle(SiparisDurumGuncelleDto dto)
         {
             var sonuc = await _siparislerService.DurumGuncelleAsync(dto);

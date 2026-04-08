@@ -75,7 +75,6 @@ const KullaniciKayit = () => {
     return (
         <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center px-6 py-12 relative">
 
-            {/* Geri Dön Butonu */}
             <button
                 onClick={() => navigate('/')}
                 className="absolute top-6 left-6 md:top-10 md:left-10 flex items-center gap-2 text-gray-400 hover:text-amber-600 transition-colors font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]"
@@ -85,7 +84,7 @@ const KullaniciKayit = () => {
             </button>
 
             <div className="max-w-[550px] w-full z-10">
-                {/* Logo Bölümü */}
+
                 <div className="text-center mb-8 md:mb-10">
                     <h1 className="text-3xl md:text-4xl font-black tracking-tighter mb-2">
                         DECO<span className="text-amber-600">.</span>STUDIO
@@ -99,7 +98,7 @@ const KullaniciKayit = () => {
                     </div>
 
                     <form onSubmit={handleRegister} className="space-y-4 md:space-y-5">
-                        {/* Ad & Soyad */}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Ad Soyad</label>
@@ -112,14 +111,13 @@ const KullaniciKayit = () => {
                                         value={formData.adSoyad}
                                         onChange={handleChange}
                                         className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-amber-500/20 transition-all outline-none text-sm placeholder:text-gray-300"
-                                        placeholder="Mustafa"
+                                        placeholder="Ad Soyad"
                                     />
                                 </div>
                             </div>
                             
                         </div>
 
-                        {/* E-Posta */}
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">E-Posta</label>
                             <div className="relative">
@@ -136,7 +134,6 @@ const KullaniciKayit = () => {
                             </div>
                         </div>
 
-                        {/* Telefon */}
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Telefon</label>
                             <div className="relative">
@@ -153,7 +150,6 @@ const KullaniciKayit = () => {
                             </div>
                         </div>
 
-                        {/* Şifreler */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Şifre</label>
@@ -184,14 +180,12 @@ const KullaniciKayit = () => {
                             </div>
                         </div>
 
-                        {/* Hata Mesajı */}
                         {error && (
                             <div className="p-4 bg-red-50 text-red-600 text-[12px] font-bold rounded-xl text-center border border-red-100 animate-pulse">
                                 {error}
                             </div>
                         )}
 
-                        {/* Kayıt Butonu */}
                         <button
                             type="submit"
                             disabled={loading}

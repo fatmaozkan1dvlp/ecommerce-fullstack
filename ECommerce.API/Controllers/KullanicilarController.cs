@@ -1,5 +1,6 @@
 ﻿using ECommerce.API.DTOs;
 using ECommerce.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
@@ -59,6 +60,14 @@ namespace ECommerce.API.Controllers
                
 
             return Ok(new { Message = sonuc.Mesaj });
+        }
+        [Authorize]
+        [HttpGet("profil/{id}")]
+        public async Task<IActionResult> GetProfil(int id)
+        {
+            var profil = await _kullanicilarService.GetProfilBilgileriAsync(id);
+            if (profil == null) return NotFound("Profil bulunamadı.");
+            return Ok(profil);
         }
     }
 }

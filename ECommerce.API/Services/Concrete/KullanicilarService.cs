@@ -80,7 +80,7 @@ namespace ECommerce.API.Services.Concrete
                 return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır (Örn: 05xxxxxxxxx).");
             bool emailVarMi = await _context.Kullanicilar
                 .AnyAsync(u => u.EMail == dto.EMail);
-            // Şifre uzunluk kontrolü (Backend güvenliği için şart)
+
             if (dto.Sifre.Length < 6)
                 return (false, "Şifre en az 6 karakter olmalıdır.");
 
@@ -140,9 +140,22 @@ namespace ECommerce.API.Services.Concrete
 
             if (kullanici == null)
                 return (false, "Kullanıcı bulunamadı.");
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            if (!emailRegex.IsMatch(dto.EMail))
+                return (false, "Geçersiz bir e-posta formatı girdiniz.");
+
+            if (dto.Telefon.Length != 11 || !dto.Telefon.All(char.IsDigit))
+                return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır (Örn: 05xxxxxxxxx).");
 
             bool emailKullanimda = await _context.Kullanicilar
                 .AnyAsync(u => u.EMail == dto.EMail && u.ID != id);
+            if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string")
+            {
+                if (dto.Sifre.Length < 6)
+                    return (false, "Yeni şifre en az 6 karakter olmalıdır.");
+
+                kullanici.SifreHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
+            }
 
             if (emailKullanimda)
                 return (false, "Bu email zaten başka bir kullanıcı tarafından kullanılıyor.");
@@ -156,9 +169,54 @@ namespace ECommerce.API.Services.Concrete
             if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string")
                 kullanici.SifreHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
 
+            if (!string.IsNullOrWhiteSpace(dto.Sehir) && dto.Sehir != "string")
+                kullanici.Sehir = dto.Sehir;
+
+            if (!string.IsNullOrWhiteSpace(dto.Telefon) && dto.Telefon != "string")
+                kullanici.Telefon = dto.Telefon;
+
+            if (!string.IsNullOrWhiteSpace(dto.TamAdres) && dto.TamAdres != "string")
+                kullanici.TamAdres = dto.TamAdres;
+
             await _context.SaveChangesAsync();
 
             return (true, "Bilgileriniz güncellendi.");
         }
+
+        public async Task<KullaniciProfilDto?> GetProfilBilgileriAsync(int kullaniciId)
+        {
+            var kullanici = await _context.Kullanicilar
+                .FirstOrDefaultAsync(u => u.ID == kullaniciId && !u.SilindiMi);
+
+            if (kullanici == null) return null;
+
+            var siparisler = await _context.Siparisler
+                .Where(s => s.KullaniciId == kullaniciId)
+                .OrderByDescending(s => s.SiparisTarihi)
+                .ToListAsync();
+
+            return new KullaniciProfilDto
+            {
+                ID = kullanici.ID,
+                AdSoyad = kullanici.AdSoyad,
+                EMail = kullanici.EMail,
+                Telefon = kullanici.Telefon,
+                Sehir = kullanici.Sehir,
+                TamAdres = kullanici.TamAdres,
+                KayitTarihi = kullanici.OlusturmaT,
+
+                ToplamSiparisSayisi = siparisler.Count,
+                ToplamHarcama = siparisler.Sum(s => s.ToplamTutar),
+
+                SonSiparisler = siparisler.Take(5).Select(s => new RecentOrderDto
+                {
+                    SiparisId = s.ID,
+                    Tarih = s.SiparisTarihi,
+                    Tutar = s.ToplamTutar,
+                    Durum = s.Durum
+                }).ToList()
+            };
+        }
+
     }
 }

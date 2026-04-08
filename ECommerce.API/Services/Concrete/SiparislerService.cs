@@ -75,8 +75,8 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<object> GetDashboardOzetAsync()
         {
-            var toplamSatis = await _context.Siparisler.SumAsync(s => (decimal?)s.ToplamTutar) ?? 0;
-            var siparisSayisi = await _context.Siparisler.CountAsync();
+            var toplamSatis = await _context.Siparisler.Where(s => s.Durum != "İptal Edildi").SumAsync(s => (decimal?)s.ToplamTutar) ?? 0;
+            var siparisSayisi = await _context.Siparisler.CountAsync(s => s.Durum != "İptal Edildi");
             var urunSayisi = await _context.Urunler.CountAsync(u => !u.SilindiMi);
 
             var sonSiparisler = await _context.Siparisler

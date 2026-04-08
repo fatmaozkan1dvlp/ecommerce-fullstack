@@ -8,5 +8,6 @@ namespace ECommerce.API.Services.Interfaces
         Task<(bool BasariliMi, string Mesaj)> RegisterAsync(KullaniciRegisterDto dto);
         Task<(bool BasariliMi, string Mesaj, object? Data)> LoginAsync(KullaniciLoginDto dto);
         Task<(bool BasariliMi, string Mesaj)> ProfilGuncelleAsync(int id, KullaniciGuncelleDto dto);
+        Task<KullaniciProfilDto?> GetProfilBilgileriAsync(int kullaniciId);
     }
 }

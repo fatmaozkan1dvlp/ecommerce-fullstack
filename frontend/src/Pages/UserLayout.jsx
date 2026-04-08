@@ -102,6 +102,15 @@ function UserLayout({ children }) {
 
                                     <div className={`absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 p-2 transition-all z-[110] 
                                         ${isUserDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>
+                                        <Link
+                                            to="/profil"
+                                            onClick={() => setIsUserDropdownOpen(false)}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-black tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors mb-1 uppercase"
+                                        >
+                                            <User size={16} className="text-amber-600" /> PROFİLİM
+                                        </Link>
+
+                                        <div className="h-[1px] bg-gray-100 dark:bg-gray-800 my-1 mx-2" />
                                         <button
                                             onClick={handleLogout}
                                             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors active:bg-red-100"

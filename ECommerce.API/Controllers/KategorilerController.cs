@@ -1,5 +1,6 @@
 ﻿using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
@@ -23,6 +24,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Kategori>> PostKategori(Kategori kategori)
         {
             var yeniKategori = await _kategorilerService.PostKategoriAsync(kategori);
@@ -30,6 +32,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> KategoriGuncelle(int id, Kategori guncelKategori)
         {
             var sonuc = await _kategorilerService.KategoriGuncelleAsync(id, guncelKategori);
@@ -41,6 +44,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("arsivle/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> KategoriArsivle(int id)
         {
             var sonuc = await _kategorilerService.KategoriArsivleAsync(id);
@@ -57,6 +61,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpDelete("kalici-sil/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> KategoriKaliciSil(int id)
         {
             var sonuc = await _kategorilerService.KategoriKaliciSilAsync(id);
@@ -73,6 +78,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpPut("arsivden-cikar/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ArsivdenCikar(int id)
         {
             var sonuc = await _kategorilerService.ArsivdenCikarAsync(id);
@@ -89,6 +95,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet("arsivlenenler")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetArsivlenenKategoriler()
         {
             var arsiv = await _kategorilerService.GetArsivlenenKategorilerAsync();

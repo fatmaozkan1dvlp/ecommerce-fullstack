@@ -20,7 +20,7 @@ const Dashboard = () => {
     }, []);
 
     const istatistikler = [
-        { id: 1, baslik: 'Toplam Kazanç', deger: `₺${ozet?.toplamKazanc?.toLocaleString('tr-TR') || 0}`, ikon: <DollarSign size={20} />, renk: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
+        { id: 1, baslik: 'Net Kazanç', deger: `₺${ozet?.toplamKazanc?.toLocaleString('tr-TR') || 0}`, ikon: <DollarSign size={20} />, renk: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
         { id: 2, baslik: 'Toplam Sipariş', deger: ozet?.toplamSiparis?.toString() || '0', ikon: <ShoppingCart size={20} />, renk: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
         { id: 3, baslik: 'Aktif Ürünler', deger: ozet?.aktifUrunSayisi?.toString() || '0', ikon: <Package size={20} />, renk: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
     ];
