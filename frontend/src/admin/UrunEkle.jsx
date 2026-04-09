@@ -169,8 +169,11 @@ const UrunEkle = () => {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 ml-1">Satış Fiyatı (₺)</label>
                                     <input
-                                        type="number" required value={fiyat} min="1"
+                                        type="number" required  step="0.01" value={fiyat} min="1"
                                         onChange={(e) => setFiyat(e.target.value)}
+                                        onBlur={(e) => {
+                                            if (e.target.value) setFiyat(parseFloat(e.target.value).toFixed(2));
+                                        }}
                                         className="w-full p-4 rounded-2xl border bg-gray-50 dark:bg-gray-900/50 dark:text-white outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-black text-blue-600"
                                         placeholder="0.00"
                                     />

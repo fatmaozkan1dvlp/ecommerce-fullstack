@@ -37,6 +37,7 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<Urun> PostUrunAsync(Urun urun)
         {
+            urun.Fiyat = Math.Round(urun.Fiyat, 2);
             urun.Kategori = null;
             urun.OlusturmaTarihi = DateTime.Now;
             urun.SilindiMi = false;
@@ -71,7 +72,9 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<(bool BasariliMi, string Mesaj, object? Data)> UrunGuncelleAsync(int id, UrunGuncelleDto dto)
         {
+            
             var mevcutUrun = await _context.Urunler.FindAsync(id);
+            
 
             if (mevcutUrun == null)
                 return (false, "Ürün bulunamadı.", null);

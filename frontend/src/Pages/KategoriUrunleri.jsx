@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link,useParams } from 'react-router-dom';
 import api, { IMG_URL } from '../api';
 import { ShoppingBag, Heart, ArrowDownUp, ChevronDown } from 'lucide-react';
 import UserLayout from './UserLayout';
@@ -90,7 +90,7 @@ const KategoriUrunleri = () => {
 
                             return (
                                 <div key={urun?.id || urun?.ID} className="group flex flex-col">
-                                    <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-[#F5F5F5] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1.5">
+                                    <Link to={`/urun/${urun.id || urun.ID}`} className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-[#F5F5F5] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1.5">
                                         <img
                                             src={gosterilecekResim}
                                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -100,23 +100,23 @@ const KategoriUrunleri = () => {
                                                 e.target.src = "https://via.placeholder.com/400x500?text=Hata";
                                             }}
                                         />
-                                        <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">
-                                            <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-amber-600 transition-all active:scale-90 flex items-center justify-center">
-                                                <ShoppingBag size={18} />
-                                            </button>
-                                            <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-red-500 transition-all active:scale-90 flex items-center justify-center">
-                                                <Heart size={18} />
-                                            </button>
+                                        {/*<div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">*/}
+                                        {/*    <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-amber-600 transition-all active:scale-90 flex items-center justify-center">*/}
+                                        {/*        <ShoppingBag size={18} />*/}
+                                        {/*    </button>*/}
+                                        {/*    <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-red-500 transition-all active:scale-90 flex items-center justify-center">*/}
+                                        {/*        <Heart size={18} />*/}
+                                        {/*    </button>*/}
 
                                             
-                                        </div>
+                                        {/*</div>*/}
                                         {(urun?.stok === 0 || urun?.Stok === 0) && (
                                             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2.5 py-1 rounded-lg">
                                                 <span className="text-[8px] font-black text-gray-900 uppercase">Tükendi</span>
                                             </div>
                                         )}
 
-                                    </div>
+                                    </Link>
                                     <div className="mt-4 flex flex-col space-y-1.5 px-1">
                                         <div className="flex items-center justify-between">
                                             <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-amber-600/80">
@@ -128,14 +128,14 @@ const KategoriUrunleri = () => {
                                                 </span>
                                             )}
                                         </div>
-
+                                        <Link to={`/urun/${urun.id || urun.ID}`}>
                                         <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-amber-600 transition-colors line-clamp-1 italic font-serif">
                                             {urun.ad || urun.Ad}
                                         </h3>
-
+                                        </Link>
                                         <div className="pt-2 flex items-baseline gap-1.5">
                                             <span className="text-lg md:text-xl font-black text-gray-950 dark:text-white tracking-tighter">
-                                                ₺{urun.fiyat?.toLocaleString('tr-TR')}
+                                                ₺{parseFloat(urun.fiyat || urun.Fiyat || 0).toFixed(2).replace('.', ',')}
                                             </span>
                                             
                                         </div>

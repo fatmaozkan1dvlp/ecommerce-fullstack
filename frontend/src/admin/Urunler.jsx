@@ -218,7 +218,7 @@ const Urunler = () => {
                                                 <div className="col-span-1 md:col-span-1 flex md:justify-end items-center gap-2">
                                                     <span className="text-[10px] text-gray-400 md:hidden font-bold uppercase">Fiyat:</span>
                                                     <span className="text-base font-black text-blue-600 dark:text-blue-400 tracking-tight">
-                                                        {(u.fiyat || u.Fiyat)?.toLocaleString('tr-TR')} ₺
+                                                        {parseFloat(u.fiyat || u.Fiyat || 0).toFixed(2).replace('.', ',')} ₺
                                                     </span>
                                                 </div>
 

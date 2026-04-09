@@ -81,10 +81,10 @@ const UrunGuncelle = () => {
 
             alert("Ürün başarıyla güncellendi!");
             navigate('/admin/urunler');
-        } catch  {
+        } catch {
             if (stok !== null) alert("Güncelleme başarısız!  Stok kısmı boş kalamaz bir değer seçiniz");
 
-            
+
         } finally {
             setIsSubmitting(false);
         }

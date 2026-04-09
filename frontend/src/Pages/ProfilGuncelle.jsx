@@ -43,6 +43,7 @@ const ProfilGuncelle = () => {
         fetchUserData();
     }, [kullaniciId]);
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -52,6 +53,7 @@ const ProfilGuncelle = () => {
         if (!updateData.sifre || updateData.sifre.trim() === "") {
             delete updateData.sifre;
         }
+
 
         try {
             await api.put(`/Kullanicilar/profil-guncelle/${kullaniciId}`, updateData);
@@ -143,9 +145,14 @@ const ProfilGuncelle = () => {
                                         <InputBox label="Telefon" icon={<Phone size={18} />}>
                                             <input
                                                 type="text"
+                                                maxLength={11} 
+                                                placeholder="05xxxxxxxxx"
                                                 className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-gray-300"
                                                 value={formData.telefon}
-                                                onChange={(e) => setFormData({ ...formData, telefon: e.target.value })}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/\D/g, "");
+                                                    setFormData({ ...formData, telefon: value });
+                                                }}
                                             />
                                         </InputBox>
 

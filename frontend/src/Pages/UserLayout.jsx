@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 import api from '../api';
-import { ShoppingBag, User, Search, X, ArrowRight, Instagram, Twitter, Facebook, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Search, X, ArrowRight, Instagram, Twitter, Facebook, LogOut } from 'lucide-react';
 
 function UserLayout({ children }) {
     const [categories, setCategories] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false); 
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+    const { cartCount, refreshCart } = useCart(); 
     const navigate = useNavigate();
 
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("user");
         const token = localStorage.getItem("token");
+
         if (savedUser && token) {
             try {
                 const parsedUser = JSON.parse(savedUser);
@@ -35,8 +39,7 @@ function UserLayout({ children }) {
                 console.error("Kategoriler çekilemedi:", error);
             }
         };
-      
-       
+
         getKategoriler();
     }, []);
 
@@ -44,6 +47,7 @@ function UserLayout({ children }) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);
+        refreshCart();
         navigate("/");
     };
 
@@ -76,12 +80,15 @@ function UserLayout({ children }) {
                             <Search size={18} />
                         </button>
 
-                        <button className="relative p-2 text-gray-900 dark:text-white group">
-                            <ShoppingBag size={20} />
-                            <span className="absolute top-0.5 right-0.5 bg-amber-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
-                                0
-                            </span>
-                        </button>
+                        <Link to="/sepet" className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
+                            <ShoppingCart size={24} className="text-gray-700 dark:text-gray-200" />
+
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
 
                         {user ? (
                             <div className="flex items-center gap-2 md:gap-3 ml-1 md:ml-2">
@@ -92,7 +99,11 @@ function UserLayout({ children }) {
                                     </span>
                                 </div>
 
-                                <div className="relative group" onMouseEnter={() => setIsUserDropdownOpen(true)} onMouseLeave={() => setIsUserDropdownOpen(false)}>
+                                <div
+                                    className="relative group"
+                                    onMouseEnter={() => setIsUserDropdownOpen(true)}
+                                    onMouseLeave={() => setIsUserDropdownOpen(false)}
+                                >
                                     <button
                                         onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                                         className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-600 hover:text-amber-600 active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
@@ -100,8 +111,9 @@ function UserLayout({ children }) {
                                         <User size={18} />
                                     </button>
 
-                                    <div className={`absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 p-2 transition-all z-[110] 
-                                        ${isUserDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>
+                                    <div className={`absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 p-2 transition-all z-[110]
+                                        ${isUserDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}
+                                    >
                                         <Link
                                             to="/profil"
                                             onClick={() => setIsUserDropdownOpen(false)}
@@ -111,6 +123,7 @@ function UserLayout({ children }) {
                                         </Link>
 
                                         <div className="h-[1px] bg-gray-100 dark:bg-gray-800 my-1 mx-2" />
+
                                         <button
                                             onClick={handleLogout}
                                             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors active:bg-red-100"
@@ -138,13 +151,13 @@ function UserLayout({ children }) {
                     onClick={() => setIsMenuOpen(false)}
                 ></div>
 
-                <aside className={`absolute top-0 left-0 h-full 
-                    w-[80%] sm:max-w-md 
-                    bg-white dark:bg-gray-900 
-                    shadow-2xl transition-transform duration-500 ease-out 
-                    rounded-r-[2rem] md:rounded-r-none 
-                    ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-
+                <aside className={`absolute top-0 left-0 h-full
+                    w-[80%] sm:max-w-md
+                    bg-white dark:bg-gray-900
+                    shadow-2xl transition-transform duration-500 ease-out
+                    rounded-r-[2rem] md:rounded-r-none
+                    ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                >
                     <div className="p-6 md:p-8 h-full flex flex-col">
                         <div className="flex justify-between items-center mb-10 md:mb-16">
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-600">
@@ -163,12 +176,12 @@ function UserLayout({ children }) {
                                 <Link
                                     key={cat.id || i}
                                     to={`/kategori/${cat.id || cat.ID}`}
-                                    onClick={() => setIsMenuOpen(false)} 
+                                    onClick={() => setIsMenuOpen(false)}
                                     className="group flex items-center p-4 rounded-2xl hover:bg-amber-50 dark:hover:bg-amber-900/10 active:bg-amber-100 transition-all border border-transparent hover:border-amber-100 dark:hover:border-amber-800"
                                 >
                                     <div className="flex-1">
                                         <h4 className="text-base font-bold text-gray-800 dark:text-gray-100 group-hover:text-amber-600 transition-colors">
-                                            {cat.ad || cat.Ad} 
+                                            {cat.ad || cat.Ad}
                                         </h4>
                                         <p className="text-[9px] text-gray-400 mt-0.5 uppercase tracking-wider">
                                             {cat.urunSayisi || "Koleksiyonu İncele"}
@@ -208,7 +221,6 @@ function UserLayout({ children }) {
             <footer className="bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 pt-16 md:pt-20 pb-10">
                 <div className="max-w-[1600px] mx-auto px-6 md:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 mb-16 text-center">
-
                         <div className="flex flex-col items-center">
                             <Link to="/" className="text-2xl font-black tracking-tighter mb-6">
                                 DECO<span className="text-amber-600">.</span>STUDIO

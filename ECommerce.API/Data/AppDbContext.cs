@@ -13,5 +13,11 @@ namespace ECommerce.API.Data
         public DbSet<Siparis> Siparisler { get; set; }
         public DbSet<SiparisDetay> SiparisDetaylari { get; set; }
         public DbSet<UrunResim> UrunResimleri { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Urun>()
+                .Property(p => p.Fiyat)
+                .HasColumnType("decimal(18,2)");
+        }
     }
 }

@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Yorum satırından çıkardık
+import { useNavigate } from 'react-router-dom';
 import {
     User, Package, Heart, LogOut, MapPin,
     Bell, ChevronRight, X, Loader2,ArrowLeft
 } from 'lucide-react';
 import api from "../api";
 import UserLayout from './UserLayout';
+import { useCart } from '../context/CartContext';
 
 const Profil = () => {
-    const navigate = useNavigate(); // Hook'u aktif ettik
+    const navigate = useNavigate();
     const [profilData, setProfilData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("siparisler");
     const [selectedSiparis, setSelectedSiparis] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const {refreshCart } = useCart();
 
     const kullaniciId = JSON.parse(localStorage.getItem("user"))?.id;
 
@@ -27,11 +29,11 @@ const Profil = () => {
 
     useEffect(() => { if (kullaniciId) fetchProfilData(); }, [kullaniciId]);
 
-    // Çıkış Fonksiyonu
     const handleLogout = () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        navigate("/login");
+        refreshCart();
+        navigate("/");
     };
 
     const detayGetir = async (id) => {
@@ -39,7 +41,7 @@ const Profil = () => {
             const res = await api.get(`/Siparisler/${id}`);
             setSelectedSiparis(res.data);
             setIsModalOpen(true);
-        } catch (err) { alert("Sipariş detayları yüklenemedi."); }
+        } catch (error) { console.err(error); alert("Sipariş detayları yüklenemedi."); }
     };
 
     const siparisIptalEt = async (id) => {
@@ -97,7 +99,7 @@ const Profil = () => {
                                 <MenuBtn
                                     onClick={() => navigate('/profil-guncelle')}
                                     icon={<User size={18} />}
-                                    label="Kullanıcı Bilgilerim"
+                                    label="Kullanıcı Bilgilerimi Güncelle"
                                 />
 
                                 {/*<MenuBtn icon={<MapPin size={18} />} label="Adreslerim" />*/}

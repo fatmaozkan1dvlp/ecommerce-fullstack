@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 import api from "../api";
 
 const KullaniciGiris = () => {
@@ -8,6 +9,7 @@ const KullaniciGiris = () => {
     const [sifre, setSifre] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { mergeGuestCartToUser } = useCart();
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -35,6 +37,7 @@ const KullaniciGiris = () => {
             if ((userData?.message === "Giriş başarılı!" || userRole === "Musteri") && token) {
                 localStorage.setItem("token",token);
                 localStorage.setItem("user", JSON.stringify(userData));
+                mergeGuestCartToUser();
                 navigate("/");
             } else {
                 setError(userData?.message || userData?.mesaj || "Giriş başarısız.");

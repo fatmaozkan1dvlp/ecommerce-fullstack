@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { ListFilter, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, ShoppingBag, Heart, Loader2 } from 'lucide-react';
+import { ListFilter, ArrowDownUp, ChevronDown, ShoppingBag, Heart, Loader2, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import UserLayout from './UserLayout';
 import api, { IMG_URL } from '../api';
-
 
 const Home = () => {
     const [urunler, setUrunler] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const urunPerPage = 12;
-    
+
+    // Sayfalama yerine "Görünür Ürün Sayısı" mantığına geçtik
+    const [visibleCount, setVisibleCount] = useState(12);
 
     useEffect(() => {
         const fetchUrunler = async () => {
@@ -26,20 +26,21 @@ const Home = () => {
         fetchUrunler();
     }, []);
 
-    const indexOfLastUrun = currentPage * urunPerPage;
-    const indexOfFirstUrun = indexOfLastUrun - urunPerPage;
-    const currentUrunler = urunler.slice(indexOfFirstUrun, indexOfLastUrun);
-    const totalPages = Math.ceil(urunler.length / urunPerPage);
+   
+
+    // Daha fazla ürün gösteren fonksiyon
+    const loadMore = () => {
+        setVisibleCount(prev => prev + 12); // Her tıklandığında 12 ürün daha ekler
+    };
+
+    // Şu an gösterilecek ürünler (0'dan görünür sayıya kadar kesiyoruz)
+    const currentUrunler = urunler.slice(0, visibleCount);
 
     return (
         <UserLayout>
             <div className="max-w-[1800px] mx-auto px-3 md:px-10 py-6 md:py-12">
                 <div className="flex items-center justify-between pb-6 mb-8 border-b border-gray-100 dark:border-gray-800 gap-3">
                     <div className="flex items-center gap-3">
-                        {/*<button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 hover:border-amber-600 transition-all active:scale-95">*/}
-                        {/*    <ListFilter size={16} className="text-amber-600" />*/}
-                        {/*    Filtre*/}
-                        {/*</button>*/}
                         <span className="hidden sm:inline text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                             {urunler.length} Ürün
                         </span>
@@ -77,29 +78,29 @@ const Home = () => {
 
                             return (
                                 <div key={u.id || u.ID} className="group flex flex-col">
-                                    <div className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-[#F5F5F5] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1.5">
+                                    <Link to={`/urun/${u.id || u.ID}`} className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-[#F5F5F5] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1.5">
                                         <img
                                             src={resimUrl}
                                             alt={u.ad || u.Ad}
                                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                             onError={(e) => { e.target.src = "https://via.placeholder.com/600x800?text=Hata"; }}
                                         />
-
-                                        <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">
-                                            <button  className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-amber-600 transition-all active:scale-90 flex items-center justify-center">
-                                                <ShoppingBag size={18} />
-                                            </button>
-                                            <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-red-500 transition-all active:scale-90 flex items-center justify-center">
-                                                <Heart size={18} />
-                                            </button>
-                                        </div>
-
+                                        
+                                        {/*<div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">*/}
+                                        {/*    <button onClick={() => addToCart(u)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-amber-600 transition-all active:scale-90 flex items-center justify-center">*/}
+                                        {/*        <ShoppingBag size={18} />*/}
+                                        {/*    </button>*/}
+                                        {/*    <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-red-500 transition-all active:scale-90 flex items-center justify-center">*/}
+                                        {/*        <Heart size={18} />*/}
+                                        {/*    </button>*/}
+                                        {/*</div>*/}
+                                        
                                         {u.stok <= 0 && (
                                             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2.5 py-1 rounded-lg">
                                                 <span className="text-[8px] font-black text-gray-900 uppercase">Tükendi</span>
                                             </div>
                                         )}
-                                    </div>
+                                    </Link>
 
                                     <div className="mt-4 flex flex-col space-y-1.5 px-1">
                                         <div className="flex items-center justify-between">
@@ -112,16 +113,16 @@ const Home = () => {
                                                 </span>
                                             )}
                                         </div>
-
-                                        <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-amber-600 transition-colors line-clamp-1 italic font-serif">
-                                            {u.ad || u.Ad}
-                                        </h3>
+                                        <Link to={`/urun/${u.id || u.ID}`}>
+                                            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-amber-600 transition-colors line-clamp-1 italic font-serif">
+                                                {u.ad || u.Ad}
+                                            </h3>
+                                        </Link>
 
                                         <div className="pt-2 flex items-baseline gap-1.5">
                                             <span className="text-lg md:text-xl font-black text-gray-950 dark:text-white tracking-tighter">
-                                                ₺{u.fiyat?.toLocaleString('tr-TR')}
+                                                ₺{parseFloat(u.fiyat || u.Fiyat || 0).toFixed(2).replace('.', ',')}
                                             </span>
-                                            
                                         </div>
                                     </div>
                                 </div>
@@ -130,34 +131,15 @@ const Home = () => {
                     </div>
                 )}
 
-                {!loading && totalPages > 1 && (
-                    <div className="mt-16 md:mt-24 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-center items-center gap-2">
+                {/* YENİ: DAHA FAZLA GÖR BUTONU */}
+                {!loading && urunler.length > visibleCount && (
+                    <div className="mt-16 flex justify-center">
                         <button
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-amber-600 disabled:opacity-20 transition-all"
+                            onClick={loadMore}
+                            className="flex items-center gap-3 px-8 py-4 bg-gray-950 dark:bg-amber-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-600 transition-all active:scale-95 shadow-2xl"
                         >
-                            <ChevronLeft size={20} />
-                        </button>
-
-                        <div className="flex items-center gap-1.5">
-                            {[...Array(totalPages)].map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                    className={`w-10 h-10 md:w-12 md:h-12 rounded-xl text-[10px] md:text-xs font-black transition-all ${currentPage === i + 1 ? 'bg-gray-950 text-white dark:bg-amber-600 shadow-lg scale-110' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 hover:border-amber-600 disabled:opacity-20 transition-all"
-                        >
-                            <ChevronRight size={20} />
+                            <Plus size={18} />
+                            Daha Fazla Gör
                         </button>
                     </div>
                 )}
