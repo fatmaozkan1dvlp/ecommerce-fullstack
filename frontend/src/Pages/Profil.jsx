@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     User, Package, Heart, LogOut, MapPin,
     Bell, ChevronRight, X, Loader2,ArrowLeft
 } from 'lucide-react';
 import api from "../api";
-import UserLayout from './UserLayout';
-import { useCart } from '../context/CartContext';
+
+
 
 const Profil = () => {
     const navigate = useNavigate();
@@ -15,24 +15,36 @@ const Profil = () => {
     const [activeTab, setActiveTab] = useState("siparisler");
     const [selectedSiparis, setSelectedSiparis] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const {refreshCart } = useCart();
 
-    const kullaniciId = JSON.parse(localStorage.getItem("user"))?.id;
 
-    const fetchProfilData = async () => {
+    
+
+    const fetchProfilData = useCallback(async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/giris"); 
+            return;
+        }
+
         try {
-            const response = await api.get(`/Kullanicilar/profil/${kullaniciId}`);
+            setLoading(true);
+            const response = await api.get(`/Kullanicilar/profil`);
             setProfilData(response.data);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
-    };
+        } catch (err) {
+            console.error("Profil yüklenirken hata oluştu:", err);
+            if (err.response?.status === 401) navigate("/giris");
+        } finally {
+            setLoading(false);
+        }
+    }, [navigate]);
 
-    useEffect(() => { if (kullaniciId) fetchProfilData(); }, [kullaniciId]);
+    useEffect(() => {
+        
+        fetchProfilData();
+    }, [fetchProfilData,activeTab]);
 
     const handleLogout = () => {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        refreshCart();
+        localStorage.clear(); 
         navigate("/");
     };
 
@@ -41,30 +53,22 @@ const Profil = () => {
             const res = await api.get(`/Siparisler/${id}`);
             setSelectedSiparis(res.data);
             setIsModalOpen(true);
-        } catch (error) { console.err(error); alert("Sipariş detayları yüklenemedi."); }
+        } catch (err) {
+            console.error(err);
+            alert("Sipariş detayları yüklenemedi.");
+        }
     };
 
-    const siparisIptalEt = async (id) => {
-        if (!window.confirm("Bu siparişi iptal etmek istediğinize emin misiniz?")) return;
-        try {
-            await api.put("/Siparisler/durum-guncelle", {
-                siparisId: id,
-                yeniDurum: "İptal Edildi"
-            });
-            alert("Sipariş iptal edildi.");
-            setIsModalOpen(false);
-            fetchProfilData();
-        } catch (err) { alert("Hata: " + (err.response?.data || "İptal edilemedi")); }
-    };
-
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]"><Loader2 className="animate-spin text-amber-600" size={40} /></div>;
-
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+            <Loader2 className="animate-spin text-amber-600" size={40} />
+        </div>
+    );
     return (
-        <UserLayout>
+       <>
             <div className="bg-[#F8F9FA] min-h-screen pt-10 pb-20 px-4">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
-                    {/* --- SOL MENÜ --- */}
                     <aside className="w-full lg:w-80 space-y-4">
                         <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
                             <div className="flex items-center gap-4 mb-8">
@@ -90,19 +94,17 @@ const Profil = () => {
                                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-3 ml-2">Siparişlerim</p>
 
                                 <MenuBtn active={activeTab === "siparisler"} onClick={() => setActiveTab("siparisler")} icon={<Package size={18} />} label="Tüm Siparişlerim" />
-                                <MenuBtn active={activeTab === "favoriler"} onClick={() => setActiveTab("favoriler")} icon={<Heart size={18} />} label="Favorilerim" />
-
+                                
                                 <div className="pt-6"></div>
                                 <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-3 ml-2">Hesabım & Yardım</p>
 
-                                {/* BURASI DÜZELDİ: navigate fonksiyonunu onClick'e verdik */}
                                 <MenuBtn
                                     onClick={() => navigate('/profil-guncelle')}
                                     icon={<User size={18} />}
                                     label="Kullanıcı Bilgilerimi Güncelle"
                                 />
 
-                                {/*<MenuBtn icon={<MapPin size={18} />} label="Adreslerim" />*/}
+                                <MenuBtn icon={<MapPin size={18} />} label="Adreslerim" />
                                 {/*<MenuBtn icon={<Bell size={18} />} label="Bildirimler" />*/}
 
                                 <button
@@ -130,13 +132,12 @@ const Profil = () => {
                                         <div className="space-y-4">
                                             {profilData?.sonSiparisler?.length > 0 ? (
                                                 profilData.sonSiparisler
-                                                    .slice() // Orijinal veriyi bozmamak için kopyasını alıyoruz
+                                                    .slice() 
                                                     .sort((a, b) => {
-                                                        // 1. Durum Kontrolü (İptal edilenleri sona at)
                                                         if (a.durum === "İptal Edildi" && b.durum !== "İptal Edildi") return 1;
                                                         if (a.durum !== "İptal Edildi" && b.durum === "İptal Edildi") return -1;
 
-                                                        // 2. Tarih Kontrolü (En yeni tarih en üstte)
+       
                                                         return new Date(b.tarih) - new Date(a.tarih);
                                                     })
                                                     .map(s => (
@@ -190,7 +191,6 @@ const Profil = () => {
                 </div>
             </div>
 
-            {/* --- DETAY MODALI --- */}
             {isModalOpen && selectedSiparis && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[999] p-4">
                     <div className="bg-white rounded-[3rem] p-8 md:p-12 w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-300 border border-white/20">
@@ -231,14 +231,14 @@ const Profil = () => {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
-                            {(selectedSiparis.durum === "Alındı" || selectedSiparis.durum === "Hazırlanıyor") && (
-                                <button
-                                    onClick={() => siparisIptalEt(selectedSiparis.id)}
-                                    className="py-4 px-6 bg-red-50 text-red-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-red-100 transition-all border border-red-100"
-                                >
-                                    Siparişi İptal Et
-                                </button>
-                            )}
+                            {/*{(selectedSiparis.durum === "Alındı" || selectedSiparis.durum === "Hazırlanıyor") && (*/}
+                            {/*    <button*/}
+                            {/*        onClick={() => siparisIptalEt(selectedSiparis.id)}*/}
+                            {/*        className="py-4 px-6 bg-red-50 text-red-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-red-100 transition-all border border-red-100"*/}
+                            {/*    >*/}
+                            {/*        Siparişi İptal Et*/}
+                            {/*    </button>*/}
+                            {/*)}*/}
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className={`py-4 px-6 bg-gray-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-amber-600 transition-all shadow-xl shadow-gray-200 ${!(selectedSiparis.durum === "Alındı" || selectedSiparis.durum === "Hazırlanıyor") ? "col-span-2" : ""}`}
@@ -249,11 +249,11 @@ const Profil = () => {
                     </div>
                 </div>
             )}
-        </UserLayout>
+        </>
     );
 };
 
-// Alt Bileşen
+
 const MenuBtn = ({ icon, label, active, onClick }) => (
     <button
         onClick={onClick}

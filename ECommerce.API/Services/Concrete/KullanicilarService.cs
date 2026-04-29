@@ -140,34 +140,28 @@ namespace ECommerce.API.Services.Concrete
 
             if (kullanici == null)
                 return (false, "Kullanıcı bulunamadı.");
+
             var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
             if (!emailRegex.IsMatch(dto.EMail))
                 return (false, "Geçersiz bir e-posta formatı girdiniz.");
 
             if (dto.Telefon.Length != 11 || !dto.Telefon.All(char.IsDigit))
-                return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır (Örn: 05xxxxxxxxx).");
+                return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır.");
 
             bool emailKullanimda = await _context.Kullanicilar
                 .AnyAsync(u => u.EMail == dto.EMail && u.ID != id);
-            if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string")
-            {
-                if (dto.Sifre.Length < 6)
-                    return (false, "Yeni şifre en az 6 karakter olmalıdır.");
-
-                kullanici.SifreHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
-            }
 
             if (emailKullanimda)
-                return (false, "Bu email zaten başka bir kullanıcı tarafından kullanılıyor.");
+                return (false, "Bu email zaten başka kullanıcıda var.");
+
+            // 🔥 GÜNCELLEME BLOĞU (CLEAN)
 
             if (!string.IsNullOrWhiteSpace(dto.AdSoyad) && dto.AdSoyad != "string")
                 kullanici.AdSoyad = dto.AdSoyad;
 
             if (!string.IsNullOrWhiteSpace(dto.EMail) && dto.EMail != "string")
                 kullanici.EMail = dto.EMail;
-
-            if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string")
-                kullanici.SifreHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
 
             if (!string.IsNullOrWhiteSpace(dto.Sehir) && dto.Sehir != "string")
                 kullanici.Sehir = dto.Sehir;
@@ -177,6 +171,15 @@ namespace ECommerce.API.Services.Concrete
 
             if (!string.IsNullOrWhiteSpace(dto.TamAdres) && dto.TamAdres != "string")
                 kullanici.TamAdres = dto.TamAdres;
+
+            // 🔥 TEK ŞİFRE UPDATE (FIX)
+            if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string")
+            {
+                if (dto.Sifre.Length < 6)
+                    return (false, "Şifre en az 6 karakter olmalıdır.");
+
+                kullanici.SifreHash = BCrypt.Net.BCrypt.HashPassword(dto.Sifre);
+            }
 
             await _context.SaveChangesAsync();
 

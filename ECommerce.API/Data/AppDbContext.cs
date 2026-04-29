@@ -11,10 +11,16 @@ namespace ECommerce.API.Data
         public DbSet<Urun> Urunler { get; set; }
         public DbSet<Kategori> Kategoriler { get; set; }
         public DbSet<Siparis> Siparisler { get; set; }
+        public DbSet<Sepet> Sepetler { get; set; }
+        public DbSet<Favoriler> Favoriler { get; set; }
         public DbSet<SiparisDetay> SiparisDetaylari { get; set; }
         public DbSet<UrunResim> UrunResimleri { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Favoriler>()
+            .HasIndex(x => new { x.KullaniciId, x.UrunId })
+            .IsUnique();
             modelBuilder.Entity<Urun>()
                 .Property(p => p.Fiyat)
                 .HasColumnType("decimal(18,2)");

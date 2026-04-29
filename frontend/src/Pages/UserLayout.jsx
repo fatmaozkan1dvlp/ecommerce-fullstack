@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
 import api from '../api';
-import { ShoppingCart, User, Search, X, ArrowRight, Instagram, Twitter, Facebook, LogOut } from 'lucide-react';
+import { ShoppingBag, User, Search, X, ArrowRight, Instagram, Twitter, Facebook, LogOut ,Heart} from 'lucide-react';
+import Urunler from '../admin/Urunler';
 
 function UserLayout({ children }) {
     const [categories, setCategories] = useState([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
-    const { cartCount, refreshCart } = useCart(); 
+
     const navigate = useNavigate();
 
     const [user, setUser] = useState(() => {
@@ -47,7 +47,6 @@ function UserLayout({ children }) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);
-        refreshCart();
         navigate("/");
     };
 
@@ -80,15 +79,28 @@ function UserLayout({ children }) {
                             <Search size={18} />
                         </button>
 
-                        <Link to="/sepet" className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
-                            <ShoppingCart size={24} className="text-gray-700 dark:text-gray-200" />
+                        <div className="flex items-center gap-2 md:gap-4">
 
-                            {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </Link>
+                            <Link
+                                to="/favoriler"
+                                className="relative group p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                            >
+                                <Heart
+                                    size={22}
+                                    className={`transition-all}`}
+                                />
+                            </Link>
+
+                            <Link
+                                to="/sepet"
+                                className="relative group p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                            >
+                                <ShoppingBag size={22} className="text-gray-700 dark:text-gray-200 group-hover:scale-110 group-active:scale-95 transition-transform duration-200" />
+
+                                
+                            </Link>
+
+                        </div>
 
                         {user ? (
                             <div className="flex items-center gap-2 md:gap-3 ml-1 md:ml-2">

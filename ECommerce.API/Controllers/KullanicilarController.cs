@@ -2,6 +2,7 @@
 using ECommerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ECommerce.API.Controllers
 {
@@ -17,57 +18,69 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
-        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
-        public async Task<ActionResult> GetMusteriler()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetMusteriler()
         {
-            var musteriler = await _kullanicilarService.GetMusterilerAsync();
-            return Ok(musteriler);
+            var result = await _kullanicilarService.GetMusterilerAsync();
+            return Ok(result);
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(KullaniciRegisterDto dto)
         {
-            var sonuc = await _kullanicilarService.RegisterAsync(dto);
+            var result = await _kullanicilarService.RegisterAsync(dto);
 
-            if (!sonuc.BasariliMi)
-                return BadRequest(sonuc.Mesaj);
+            if (!result.BasariliMi)
+                return BadRequest(result.Mesaj);
 
-            return Ok(sonuc.Mesaj);
+            return Ok(result.Mesaj);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(KullaniciLoginDto dto)
         {
-            var sonuc = await _kullanicilarService.LoginAsync(dto);
+            var result = await _kullanicilarService.LoginAsync(dto);
 
-            if (!sonuc.BasariliMi)
-                return BadRequest(sonuc.Mesaj);
+            if (!result.BasariliMi)
+                return BadRequest(result.Mesaj);
 
-            return Ok(sonuc.Data);
+            return Ok(result.Data);
         }
 
-        [HttpPut("profil-guncelle/{id}")]
-        public async Task<IActionResult> ProfilGuncelle(int id, KullaniciGuncelleDto dto)
-        {
-            var sonuc = await _kullanicilarService.ProfilGuncelleAsync(id, dto);
-
-            if (!sonuc.BasariliMi) {
-                if(sonuc.Mesaj=="Kullanıcı Bulunamadı.")
-                    return NotFound(sonuc.Mesaj);
-                
-                return BadRequest(sonuc.Mesaj); 
-            }
-               
-
-            return Ok(new { Message = sonuc.Mesaj });
-        }
         [Authorize]
-        [HttpGet("profil/{id}")]
-        public async Task<IActionResult> GetProfil(int id)
+        [HttpPut("profil")]
+        public async Task<IActionResult> ProfilGuncelle(KullaniciGuncelleDto dto)
         {
-            var profil = await _kullanicilarService.GetProfilBilgileriAsync(id);
-            if (profil == null) return NotFound("Profil bulunamadı.");
-            return Ok(profil);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var result = await _kullanicilarService.ProfilGuncelleAsync(userId, dto);
+
+            if (!result.BasariliMi)
+                return BadRequest(result.Mesaj);
+
+            return Ok(new { message = result.Mesaj });
         }
+
+        [Authorize]
+        [HttpGet("profil")]
+        public async Task<IActionResult> Profil()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var result = await _kullanicilarService.GetProfilBilgileriAsync(userId);
+
+            return Ok(result);
+        }
+
     }
 }

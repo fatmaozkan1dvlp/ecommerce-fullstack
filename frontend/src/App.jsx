@@ -18,16 +18,13 @@ import KategoriUrunleri from './pages/KategoriUrunleri';
 import Profil from './pages/Profil';
 import ProfilGuncelle from './pages/ProfilGuncelle';
 import UrunDetay from './pages/UrunDetay';
+import Favoriler from './pages/Favoriler';
 import Sepet from './pages/Sepet';
-import { CartProvider } from './context/CartContext';
-
 
 
 function App() {
     return (
-        <CartProvider>
             <Router>
-            
                 <Routes>
                 
                     <Route path="/" element={<Home />} />
@@ -38,8 +35,13 @@ function App() {
                     <Route path="/kayit" element={<KullaniciKayit />} />
                     <Route path="/profil" element={<Profil />} />
                     <Route path="/profil-guncelle" element={<ProfilGuncelle />} />
-                    <Route path="/urun/:id" element={<UrunDetay/> }/>
-                    <Route path="/sepet" element={<Sepet/> }/>
+                    <Route path="/urun/:id" element={<UrunDetay />} />
+                    <Route path="/favoriler" element={<Favoriler />} />
+                    <Route path="/sepet" element={<Sepet />} />
+
+  
+                    
+
                 
 
                     <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
@@ -54,10 +56,8 @@ function App() {
                     <Route path="/admin/ayarlar" element={<AdminRoute><Ayarlar /></AdminRoute>} />
                 
                 </Routes>
-        
             </Router>
 
-        </CartProvider>
         
     );
 }

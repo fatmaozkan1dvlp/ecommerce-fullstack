@@ -74,6 +74,8 @@ builder.Services.AddScoped<IKullanicilarService,KullanicilarService>();
 builder.Services.AddScoped<IKategorilerService,KategorilerService>();
 builder.Services.AddScoped<IUrunlerService,UrunlerService>();
 builder.Services.AddScoped<ISiparislerService,SiparislerService>();
+builder.Services.AddScoped<ISepetService, SepetService>();
+builder.Services.AddScoped<IFavorilerService, FavorilerService>();
 
 
 builder.Services.AddControllers();

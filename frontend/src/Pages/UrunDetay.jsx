@@ -1,22 +1,114 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ShoppingCart, ArrowLeft, Plus, Minus,
-    ShieldCheck, Truck, Loader2
+    ShieldCheck, Truck, Loader2, Heart, CheckCircle2
 } from 'lucide-react';
 import api, { IMG_URL } from '../api';
-import { useCart } from '../context/CartContext';
 import UserLayout from './UserLayout';
 
 const UrunDetay = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
     const [urun, setUrun] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState(0);
     const [adet, setAdet] = useState(1);
-    const { addToCart, cart } = useCart();
+    const [notification, setNotification] = useState({ show: false, message: "" });
+    const [isFav, setIsFav] = useState(false);
+    const [sepettekiAdet, setSepettekiAdet] = useState(0);
 
+    const fetchSepetAdet = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const res = await api.get("/Sepet");
+            const item = res.data.find(x => x.urunId === Number(id));
+            setSepettekiAdet(item ? item.adet : 0);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const showMessage = (msg) => {
+        setNotification({ show: true, message: msg });
+        setTimeout(() => {
+            setNotification({ show: false, message: "" });
+        }, 4000);
+    };
+
+    const fetchFavoriDurum = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const res = await api.get("/Favoriler");
+            const favIds = res.data.map(f => f.urunId);
+
+            setIsFav(favIds.includes(Number(id)));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const sepeteEkle = async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            showMessage("Sepete eklemek için giriş yapmalısınız");
+            return;
+        }
+
+        const toplam = sepettekiAdet + adet;
+
+        if (toplam > urun.stok) {
+            showMessage(`Maksimum ${urun.stok} adet ekleyebilirsiniz`);
+            return;
+        }
+
+        try {
+            await api.post("/Sepet/ekle", {
+                urunId: urun.id,
+                adet: adet
+            });
+
+            showMessage("Ürün sepete eklendi");
+            fetchSepetAdet();
+        } catch (err) {
+            console.error(err);
+            showMessage("Sepete eklenemedi");
+        }
+    };
+
+    const toggleFavori = async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            showMessage("Favorilere eklemek için giriş yapmalısınız");
+            return;
+        }
+
+        try {
+            await api.post("/Favoriler/ekle-cikar", { urunId: urun.id });
+
+            const isAdding = !isFav;
+
+            setIsFav(prev => !prev);
+
+            showMessage(
+                isAdding
+                    ? "Ürün favorilerinize eklendi"
+                    : "Favorilerden çıkarıldı"
+            );
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    
     useEffect(() => {
         const fetchUrun = async () => {
             try {
@@ -29,38 +121,12 @@ const UrunDetay = () => {
                 setLoading(false);
             }
         };
+
         fetchUrun();
+        fetchFavoriDurum();
+        fetchSepetAdet();
+
     }, [id]);
-
-    const sepeteEkle = () => {
-        if (!urun) return;
-
-        const sepettekiUrun = cart.find(item => item.id === urun.id);
-        const mevcutSepetAdedi = sepettekiUrun ? sepettekiUrun.quantity : 0;
-
-        // seçilen adet + sepetteki adet > stok ise engelle
-        if (mevcutSepetAdedi + adet > urun.stok) {
-            alert(`Bu üründen en fazla ${urun.stok} adet ekleyebilirsiniz.`);
-            return;
-        }
-
-        const anaResim =
-            urun.resimler?.length > 0
-                ? `${IMG_URL}${urun.resimler[0].url.startsWith('/') ? '' : '/'}${urun.resimler[0].url}`
-                : "";
-
-        addToCart(
-            {
-                id: urun.id,
-                ad: urun.ad,
-                fiyat: urun.fiyat,
-                resimUrl: anaResim
-            },
-            adet
-        );
-
-        alert("Ürün sepete eklendi!");
-    };
 
     if (loading) return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-white">
@@ -73,6 +139,15 @@ const UrunDetay = () => {
 
     return (
         <UserLayout>
+            <div
+                className={`fixed top-10 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-500 transform ${notification.show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
+                    }`}
+            >
+                <div className="bg-gray-900 dark:bg-amber-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-md">
+                    <CheckCircle2 size={18} className="text-green-400 dark:text-white" />
+                    <span className="text-xs font-black uppercase tracking-widest">{notification.message}</span>
+                </div>
+            </div>
             <div className="bg-[#F8F9FA] min-h-screen pt-8 pb-16 md:pt-12 md:pb-24 px-4 md:px-6">
                 <div className="max-w-6xl mx-auto">
 
@@ -139,15 +214,31 @@ const UrunDetay = () => {
                                 {urun.ad}
                             </h1>
 
-                            <div className="flex items-baseline gap-4 mb-8">
-                                <span className="text-4xl md:text-5xl font-black text-gray-950 tracking-tighter">
-                                    ₺{(urun.fiyat)?.toLocaleString('tr-TR')}
-                                </span>
-                                {urun.stok > 0 && urun.stok < 5 && (
-                                    <span className="text-xs font-bold text-red-500 animate-pulse uppercase tracking-tighter bg-red-50 px-2 py-1 rounded-md">
-                                        Son {urun.stok} Ürün!
+                            <div className="flex items-center justify-between mb-8 gap-4">
+                                <div className="flex items-baseline gap-4">
+                                    <span className="text-4xl md:text-5xl font-black text-gray-950 tracking-tighter">
+                                        ₺{(urun.fiyat)?.toLocaleString('tr-TR')}
                                     </span>
-                                )}
+
+                                    {urun.stok > 0 && urun.stok < 5 && (
+                                        <span className="text-xs font-bold text-red-500 animate-pulse uppercase tracking-tighter bg-red-50 px-2 py-1 rounded-md">
+                                            Son {urun.stok} Ürün!
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* ❤️ FAVORİ BUTONU */}
+                                <button
+                                    onClick={toggleFavori}
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all
+${isFav
+                                            ? "bg-red-50 border-red-200 text-red-500"
+                                            : "bg-white border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200"}
+
+`}
+                                >
+                                    <Heart className={isFav ? "fill-red-500" : ""} size={20} />
+                                </button>
                             </div>
 
                             <p className="text-gray-500 text-sm md:text-base leading-relaxed mb-10 font-medium max-w-xl">
@@ -171,9 +262,11 @@ const UrunDetay = () => {
 
                                         <button
                                             onClick={() => {
-                                                if (adet < urun.stok) {
-                                                    setAdet(adet + 1);
+                                                if (adet + sepettekiAdet >= urun.stok) {
+                                                    showMessage("Stok limitine ulaştınız");
+                                                    return;
                                                 }
+                                                setAdet(adet + 1);
                                             }}
                                             className="w-11 h-11 flex items-center justify-center hover:bg-white hover:shadow rounded-xl transition-all disabled:opacity-50"
                                             disabled={adet >= urun.stok}
@@ -183,8 +276,9 @@ const UrunDetay = () => {
                                     </div>
 
                                     <button
-                                        disabled={urun.stok <= 0}
                                         onClick={sepeteEkle}
+                                        disabled={urun.stok <= 0}
+                                       
                                         className="flex-1 bg-gray-950 text-white h-14 rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-3.5 hover:bg-amber-600 disabled:bg-gray-200 disabled:cursor-not-allowed transition-all shadow-xl shadow-gray-100"
                                     >
                                         <ShoppingCart size={18} />
@@ -192,9 +286,7 @@ const UrunDetay = () => {
                                     </button>
                                 </div>
 
-                                <p className="text-sm text-gray-500">
-                                    Stok: <span className="font-bold text-gray-900">{urun.stok}</span>
-                                </p>
+                                
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-4 rounded-2xl border border-gray-100 bg-gray-50 flex items-center gap-3.5 shadow-inner">
