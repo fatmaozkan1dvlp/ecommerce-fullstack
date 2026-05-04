@@ -1,6 +1,5 @@
 ﻿namespace ECommerce.API.DTOs
 {
-
     public class FavorilerDto
     {
         public int Id { get; set; }
@@ -13,6 +12,6 @@
     public class FavoriIslemDto
     {
         public int UrunId { get; set; }
-        public int KullaniciId { get; set; }
+
     }
 }

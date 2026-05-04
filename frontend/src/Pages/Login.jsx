@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, ShieldCheck, Loader2, ChevronLeft } from 'lucide-react';
-import api from "../api";
+import api, { getUserRole } from "../api";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [sifre, setSifre] = useState("");
     const [hata, setHata] = useState("");
     const [loading, setLoading] = useState(false);
-
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -22,28 +21,28 @@ const Login = () => {
                 sifre: sifre
             });
 
-            const userData = response.data;
-            const userRole = userData?.rol || userData?.Rol;
-            const token = userData?.token || userData?.Token;
+            const { Token, token } = response.data;
+            const gelen_token = Token || token;
 
-            if (userRole !== "Admin") {
+            if (!gelen_token) {
+                setHata("Token alınamadı.");
+                return;
+            }
+
+            sessionStorage.setItem("adminToken", gelen_token);
+            const rol = getUserRole("admin");
+
+            if (rol !== "Admin") {
+                localStorage.removeItem("token");
                 setHata("Bu panele sadece admin kullanıcılar giriş yapabilir.");
-                setLoading(false);
-                return;
-            }
-            if (!token) {
-                setHata("Sistemsel bir hata oluştu (Token alınamadı).");
-                setLoading(false);
                 return;
             }
 
-            localStorage.setItem("token", token);
-
-            sessionStorage.setItem("adminUser", JSON.stringify(userData));
             navigate("/admin/dashboard");
         } catch (error) {
-            console.error(error);
-            const mesaj = error.response?.data || "Giriş bilgileri hatalı veya sunucu yanıt vermiyor.";
+            const mesaj = error.response?.data?.message
+                || error.response?.data?.Message
+                || "Giriş bilgileri hatalı.";
             setHata(mesaj);
         } finally {
             setLoading(false);
@@ -61,7 +60,6 @@ const Login = () => {
             </button>
 
             <div className="w-full max-w-[450px]">
-
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-3xl shadow-sm border border-gray-100 mb-6">
                         <ShieldCheck size={32} className="text-indigo-600" />
@@ -92,6 +90,7 @@ const Login = () => {
                                 />
                             </div>
                         </div>
+
                         <div className="space-y-2">
                             <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">
                                 Güvenlik Şifresi
@@ -110,7 +109,7 @@ const Login = () => {
                         </div>
 
                         {hata && (
-                            <div className="p-4 bg-red-50 text-red-600 text-[13px] font-bold rounded-xl text-center animate-shake">
+                            <div className="p-4 bg-red-50 text-red-600 text-[13px] font-bold rounded-xl text-center">
                                 {hata}
                             </div>
                         )}
@@ -120,16 +119,10 @@ const Login = () => {
                             disabled={loading}
                             className="w-full bg-gray-900 hover:bg-indigo-600 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-indigo-200/40 disabled:opacity-70 mt-4"
                         >
-                            {loading ? (
-                                <Loader2 className="animate-spin" size={20} />
-                            ) : (
-                                "Sisteme Giriş Yap"
-                            )}
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : "Sisteme Giriş Yap"}
                         </button>
                     </form>
                 </div>
-
-                
             </div>
         </div>
     );

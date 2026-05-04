@@ -91,7 +91,7 @@ const UrunDetay = () => {
         }
 
         try {
-            await api.post("/Favoriler/ekle-cikar", { urunId: urun.id });
+            await api.post("/Favoriler/toggle", { urunId: urun.id });
 
             const isAdding = !isFav;
 
@@ -227,7 +227,6 @@ const UrunDetay = () => {
                                     )}
                                 </div>
 
-                                {/* ❤️ FAVORİ BUTONU */}
                                 <button
                                     onClick={toggleFavori}
                                     className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all

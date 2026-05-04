@@ -18,48 +18,53 @@ namespace ECommerce.API.Controllers
             _sepetService = sepetService;
         }
 
+        private int GetUserId() =>
+            int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var result = await _sepetService.GetUserCartAsync(userId);
+            var result = await _sepetService.GetUserCartAsync(GetUserId());
             return Ok(result);
         }
 
         [HttpPost("ekle")]
         public async Task<IActionResult> Ekle([FromBody] SepetEkleDto dto)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var result = await _sepetService.AddToCartAsync(GetUserId(), dto);
 
-            dto.KullaniciId = userId;
-            var result = await _sepetService.AddToCartAsync(dto);
-            if (result) return Ok(new { message = "Ürün sepete eklendi." });
-            return BadRequest("Ürün eklenemedi.");
+            if (!result.BasariliMi)
+                return BadRequest(new { Message = result.Mesaj });
+
+            return Ok(new { Message = result.Mesaj });
         }
 
         [HttpDelete("sil/{id}")]
         public async Task<IActionResult> Sil(int id)
         {
-            var result = await _sepetService.RemoveFromCartAsync(id);
-            if (result) return Ok(new { message = "Ürün sepetten çıkarıldı." });
-            return NotFound();
+            var result = await _sepetService.RemoveFromCartAsync(id, GetUserId());
+
+            if (!result.BasariliMi)
+                return NotFound(new { Message = result.Mesaj });
+
+            return Ok(new { Message = result.Mesaj });
         }
 
-        [HttpPut("guncelle/{id}/{adet}")]
-        public async Task<IActionResult> Guncelle(int id, int adet)
+        [HttpPut("guncelle/{id}")]
+        public async Task<IActionResult> Guncelle(int id, [FromBody] int adet)
         {
-            var result = await _sepetService.UpdateQuantityAsync(id, adet);
-            if (result) return Ok();
-            return BadRequest("Stok yetersiz");
+            var result = await _sepetService.UpdateQuantityAsync(id, GetUserId(), adet);
+
+            if (!result.BasariliMi)
+                return BadRequest(new { Message = result.Mesaj });
+
+            return Ok(new { Message = result.Mesaj });
         }
 
         [HttpGet("ozet")]
         public async Task<IActionResult> Ozet()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            var result = await _sepetService.GetCartSummary(userId);
-
+            var result = await _sepetService.GetCartSummaryAsync(GetUserId());
             return Ok(result);
         }
     }

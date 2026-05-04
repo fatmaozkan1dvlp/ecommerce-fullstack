@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, ArrowRight, Loader2, ChevronLeft, Phone } from 'lucide-react';
 import api from "../api";
+import toast from 'react-hot-toast';
 
 const KullaniciKayit = () => {
     const navigate = useNavigate();
@@ -17,12 +18,10 @@ const KullaniciKayit = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         if (name === "telefon") {
             const onlyNums = value.replace(/[^0-9]/g, '');
-            if (onlyNums.length <= 11) {
+            if (onlyNums.length <= 11)
                 setFormData({ ...formData, [name]: onlyNums });
-            }
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -31,22 +30,21 @@ const KullaniciKayit = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.eMail)) {
-            setError("Lütfen geçerli bir e-posta adresi giriniz (örn: isim@gmail.com).");
+            setError("Lütfen geçerli bir e-posta adresi giriniz.");
             return;
         }
-        if(formData.sifre.length < 6) {
-            setError("Şifreniz güvenlik için en az 6 karakter olmalıdır.");
+        if (formData.sifre.length < 6) {
+            setError("Şifreniz en az 6 karakter olmalıdır.");
             return;
         }
-
         if (formData.telefon.length !== 11) {
             setError("Telefon numarası tam 11 hane olmalıdır.");
             return;
         }
 
-        if(formData.telefon )
         if (formData.sifre !== formData.sifreTekrar) {
             setError("Şifreler birbiriyle eşleşmiyor.");
             return;
@@ -54,18 +52,19 @@ const KullaniciKayit = () => {
 
         setLoading(true);
         try {
-            const payload = {
+            await api.post("/Kullanicilar/register", {
                 adSoyad: formData.adSoyad,
                 eMail: formData.eMail,
                 telefon: formData.telefon,
-                sifre: formData.sifre 
-            };
+                sifre: formData.sifre
+            });
 
-            await api.post("/Kullanicilar/register", payload);
-            alert( "Kaydınız Başarıyla Gerçekleştirildi!");
+            toast.success("Kaydınız başarıyla oluşturuldu!");
             navigate('/giris');
         } catch (err) {
-            const mesaj = err.response?.data?.message || err.response?.data?.mesaj || err.response?.data || "Kayıt sırasında bir hata oluştu.";
+            const mesaj = err.response?.data?.message
+                || err.response?.data?.Message
+                || "Kayıt sırasında bir hata oluştu.";
             setError(mesaj);
         } finally {
             setLoading(false);
@@ -74,7 +73,6 @@ const KullaniciKayit = () => {
 
     return (
         <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center px-6 py-12 relative">
-
             <button
                 onClick={() => navigate('/')}
                 className="absolute top-6 left-6 md:top-10 md:left-10 flex items-center gap-2 text-gray-400 hover:text-amber-600 transition-colors font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]"
@@ -84,7 +82,6 @@ const KullaniciKayit = () => {
             </button>
 
             <div className="max-w-[550px] w-full z-10">
-
                 <div className="text-center mb-8 md:mb-10">
                     <h1 className="text-3xl md:text-4xl font-black tracking-tighter mb-2">
                         DECO<span className="text-amber-600">.</span>STUDIO
@@ -98,24 +95,20 @@ const KullaniciKayit = () => {
                     </div>
 
                     <form onSubmit={handleRegister} className="space-y-4 md:space-y-5">
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Ad Soyad</label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                    <input
-                                        name="adSoyad"
-                                        type="text"
-                                        required
-                                        value={formData.adSoyad}
-                                        onChange={handleChange}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-amber-500/20 transition-all outline-none text-sm placeholder:text-gray-300"
-                                        placeholder="Ad Soyad"
-                                    />
-                                </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Ad Soyad</label>
+                            <div className="relative">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    name="adSoyad"
+                                    type="text"
+                                    required
+                                    value={formData.adSoyad}
+                                    onChange={handleChange}
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-amber-500/20 transition-all outline-none text-sm placeholder:text-gray-300"
+                                    placeholder="Ad Soyad"
+                                />
                             </div>
-                            
                         </div>
 
                         <div className="space-y-2">
@@ -181,7 +174,7 @@ const KullaniciKayit = () => {
                         </div>
 
                         {error && (
-                            <div className="p-4 bg-red-50 text-red-600 text-[12px] font-bold rounded-xl text-center border border-red-100 animate-pulse">
+                            <div className="p-4 bg-red-50 text-red-600 text-[12px] font-bold rounded-xl text-center border border-red-100">
                                 {error}
                             </div>
                         )}
@@ -191,13 +184,7 @@ const KullaniciKayit = () => {
                             disabled={loading}
                             className="w-full bg-gray-950 hover:bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-gray-200 mt-2 disabled:opacity-70 active:scale-[0.98]"
                         >
-                            {loading ? (
-                                <Loader2 className="animate-spin" size={20} />
-                            ) : (
-                                <>
-                                    Kayıt Ol <ArrowRight size={18} />
-                                </>
-                            )}
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : <>Kayıt Ol <ArrowRight size={18} /></>}
                         </button>
                     </form>
                 </div>

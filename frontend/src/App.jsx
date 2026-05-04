@@ -1,5 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Dashboard from './admin/Dashboard'; 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+import Dashboard from './admin/Dashboard';
 import Urunler from './admin/Urunler';
 import Kategoriler from './admin/Kategoriler';
 import Musteriler from './admin/Musteriler';
@@ -9,7 +11,10 @@ import Arsivlenenler from './admin/Arsivlenenler';
 import UrunGuncelle from './admin/UrunGuncelle';
 import Siparisler from './admin/Siparisler';
 import Ayarlar from './admin/Ayarlar';
+
 import AdminRoute from './components/AdminRoute';
+import AuthRoute from './components/AuthRoute';
+
 import Login from './pages/Login';
 import Home from './pages/Home';
 import KullaniciGiris from './pages/KullaniciGiris';
@@ -21,44 +26,39 @@ import UrunDetay from './pages/UrunDetay';
 import Favoriler from './pages/Favoriler';
 import Sepet from './pages/Sepet';
 
-
 function App() {
     return (
-            <Router>
-                <Routes>
-                
-                    <Route path="/" element={<Home />} />
-                    <Route path="/kategori/:id" element={<KategoriUrunleri />} />
-                
-                    <Route path="/admin" element={<Login />} />
-                    <Route path="/giris" element={<KullaniciGiris />} />
-                    <Route path="/kayit" element={<KullaniciKayit />} />
-                    <Route path="/profil" element={<Profil />} />
-                    <Route path="/profil-guncelle" element={<ProfilGuncelle />} />
-                    <Route path="/urun/:id" element={<UrunDetay />} />
-                    <Route path="/favoriler" element={<Favoriler />} />
-                    <Route path="/sepet" element={<Sepet />} />
+        <Router>
+            {/* Toast bildirimleri için */}
+            <Toaster position="top-right" />
+            <Routes>
 
-  
-                    
+                <Route path="/" element={<Home />} />
+                <Route path="/kategori/:id" element={<KategoriUrunleri />} />
+                <Route path="/urun/:id" element={<UrunDetay />} />
+                <Route path="/giris" element={<KullaniciGiris />} />
+                <Route path="/kayit" element={<KullaniciKayit />} />
+                <Route path="/sepet" element={<Sepet />} />
+                <Route path="/favoriler" element={<Favoriler />} />
 
+                <Route path="/admin" element={<Login />} />
+
+                <Route path="/profil" element={<AuthRoute><Profil /></AuthRoute>} />
+                <Route path="/profil-guncelle" element={<AuthRoute><ProfilGuncelle /></AuthRoute>} />
                 
+                <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
+                <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />
+                <Route path="/admin/kategoriler" element={<AdminRoute><Kategoriler /></AdminRoute>} />
+                <Route path="/admin/arsivlenenler" element={<AdminRoute><Arsivlenenler /></AdminRoute>} />
+                <Route path="/admin/musteriler" element={<AdminRoute><Musteriler /></AdminRoute>} />
+                <Route path="/admin/urun-ekle" element={<AdminRoute><UrunEkle /></AdminRoute>} />
+                <Route path="/admin/kategori-ekle" element={<AdminRoute><KategoriEkle /></AdminRoute>} />
+                <Route path="/admin/urun-guncelle/:id" element={<AdminRoute><UrunGuncelle /></AdminRoute>} />
+                <Route path="/admin/siparisler/:durum" element={<AdminRoute><Siparisler /></AdminRoute>} />
+                <Route path="/admin/ayarlar" element={<AdminRoute><Ayarlar /></AdminRoute>} />
 
-                    <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
-                    <Route path="/admin/urunler" element={<AdminRoute><Urunler /></AdminRoute>} />
-                    <Route path="/admin/kategoriler" element={<AdminRoute><Kategoriler /></AdminRoute>} />
-                    <Route path="/admin/arsivlenenler" element={<AdminRoute><Arsivlenenler /></AdminRoute>} />
-                    <Route path="/admin/musteriler" element={<AdminRoute><Musteriler /></AdminRoute>} />
-                    <Route path="/admin/urun-ekle" element={<AdminRoute><UrunEkle /></AdminRoute>} />
-                    <Route path="/admin/kategori-ekle" element={<AdminRoute><KategoriEkle /></AdminRoute>} />
-                    <Route path="/admin/urun-guncelle/:id" element={<AdminRoute><UrunGuncelle /></AdminRoute>} />
-                    <Route path="/admin/siparisler/:durum" element={<AdminRoute><Siparisler /></AdminRoute>} />
-                    <Route path="/admin/ayarlar" element={<AdminRoute><Ayarlar /></AdminRoute>} />
-                
-                </Routes>
-            </Router>
-
-        
+            </Routes>
+        </Router>
     );
 }
 

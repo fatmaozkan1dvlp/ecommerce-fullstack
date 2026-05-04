@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Models;
+﻿using ECommerce.API.DTOs;
 using ECommerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +17,7 @@ namespace ECommerce.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Kategori>>> GetKategoriler()
+        public async Task<IActionResult> GetKategoriler()
         {
             var kategoriler = await _kategorilerService.GetKategorilerAsync();
             return Ok(kategoriler);
@@ -25,20 +25,27 @@ namespace ECommerce.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Kategori>> PostKategori(Kategori kategori)
+        public async Task<IActionResult> PostKategori([FromBody] KategoriEkleDto dto)
         {
-            var yeniKategori = await _kategorilerService.PostKategoriAsync(kategori);
-            return Ok(yeniKategori);
+            if (string.IsNullOrWhiteSpace(dto.Ad))
+                return BadRequest(new { Message = "Kategori adı boş olamaz." });
+
+            var sonuc = await _kategorilerService.PostKategoriAsync(dto);
+
+            if (!sonuc.BasariliMi)
+                return BadRequest(new { Message = sonuc.Mesaj });
+
+            return Ok(new { Message = sonuc.Mesaj, Kategori = sonuc.Data });
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> KategoriGuncelle(int id, Kategori guncelKategori)
+        public async Task<IActionResult> KategoriGuncelle(int id, [FromBody] KategoriGuncelleDto dto)
         {
-            var sonuc = await _kategorilerService.KategoriGuncelleAsync(id, guncelKategori);
+            var sonuc = await _kategorilerService.KategoriGuncelleAsync(id, dto);
 
             if (!sonuc.BasariliMi)
-                return NotFound(sonuc.Mesaj);
+                return NotFound(new { Message = sonuc.Mesaj });
 
             return Ok(new { Message = sonuc.Mesaj });
         }
@@ -52,9 +59,9 @@ namespace ECommerce.API.Controllers
             if (!sonuc.BasariliMi)
             {
                 if (sonuc.Mesaj == "Kategori bulunamadı.")
-                    return NotFound(sonuc.Mesaj);
+                    return NotFound(new { Message = sonuc.Mesaj });
 
-                return BadRequest(sonuc.Mesaj);
+                return BadRequest(new { Message = sonuc.Mesaj });
             }
 
             return Ok(new { Message = sonuc.Mesaj });
@@ -69,9 +76,9 @@ namespace ECommerce.API.Controllers
             if (!sonuc.BasariliMi)
             {
                 if (sonuc.Mesaj == "Kategori bulunamadı.")
-                    return NotFound(sonuc.Mesaj);
+                    return NotFound(new { Message = sonuc.Mesaj });
 
-                return BadRequest(sonuc.Mesaj);
+                return BadRequest(new { Message = sonuc.Mesaj });
             }
 
             return Ok(new { Message = sonuc.Mesaj });
@@ -86,9 +93,9 @@ namespace ECommerce.API.Controllers
             if (!sonuc.BasariliMi)
             {
                 if (sonuc.Mesaj == "Kategori bulunamadı.")
-                    return NotFound(sonuc.Mesaj);
+                    return NotFound(new { Message = sonuc.Mesaj });
 
-                return BadRequest(sonuc.Mesaj);
+                return BadRequest(new { Message = sonuc.Mesaj });
             }
 
             return Ok(new { Message = sonuc.Mesaj });

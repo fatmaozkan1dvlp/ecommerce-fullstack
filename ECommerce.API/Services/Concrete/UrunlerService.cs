@@ -35,16 +35,21 @@ namespace ECommerce.API.Services.Concrete
             return urunler;
         }
 
-        public async Task<Urun> PostUrunAsync(Urun urun)
+        public async Task<Urun> PostUrunAsync(UrunEkleDto dto)
         {
-            urun.Fiyat = Math.Round(urun.Fiyat, 2);
-            urun.Kategori = null;
-            urun.OlusturmaTarihi = DateTime.Now;
-            urun.SilindiMi = false;
+            var urun = new Urun
+            {
+                Ad = dto.Ad,
+                Fiyat = Math.Round(dto.Fiyat, 2),
+                Stok = dto.Stok,
+                Aciklama = dto.Aciklama,
+                KategoriId = dto.KategoriId,
+                OlusturmaTarihi = DateTime.Now,
+                SilindiMi = false
+            };
 
             _context.Urunler.Add(urun);
             await _context.SaveChangesAsync();
-
             return urun;
         }
 
@@ -53,7 +58,7 @@ namespace ECommerce.API.Services.Concrete
             var urun = await _context.Urunler
                 .Include(u => u.Resimler)
                 .Include(u => u.Kategori)
-                .FirstOrDefaultAsync(u => u.ID == id);
+                .FirstOrDefaultAsync(u => u.ID == id && !u.SilindiMi);
 
             if (urun == null) return null;
 
@@ -240,12 +245,17 @@ namespace ECommerce.API.Services.Concrete
 
             var tumResimler = await _context.UrunResimleri
                 .Where(r => r.UrunId == secilenResim.UrunId)
+                .OrderBy(r => r.SiraNo)
                 .ToListAsync();
 
+            int sira = 2;
             foreach (var r in tumResimler)
-                r.SiraNo = 2;
-
-            secilenResim.SiraNo = 1;
+            {
+                if (r.ID == resimId)
+                    r.SiraNo = 1;
+                else
+                    r.SiraNo = sira++;
+            }
 
             await _context.SaveChangesAsync();
 

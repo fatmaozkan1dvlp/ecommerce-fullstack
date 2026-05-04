@@ -1,5 +1,5 @@
 import axios from "axios";
-import { toast } from "react-hot-toast"; 
+import { toast } from "react-hot-toast";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -8,36 +8,69 @@ const api = axios.create({
 
 export const IMG_URL = import.meta.env.VITE_IMG_URL;
 
+
+const getActiveToken = () => {
+    return sessionStorage.getItem("adminToken") || localStorage.getItem("token");
+};
+
+export const getTokenPayload = (type = "user") => {
+    const token = type === "admin"
+        ? sessionStorage.getItem("adminToken")
+        : localStorage.getItem("token");
+
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        if (payload.exp * 1000 < Date.now()) {
+            if (type === "admin") sessionStorage.removeItem("adminToken");
+            else localStorage.removeItem("token");
+            return null;
+        }
+        return payload;
+    } catch {
+        return null;
+    }
+};
+
+export const getUserRole = (type = "user") => {
+    const payload = getTokenPayload(type);
+    if (!payload) return null;
+    return payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+        || payload["role"]
+        || null;
+};
+
+export const isAuthenticated = () => !!getTokenPayload("user");
+export const isAdmin = () => getUserRole("admin") === "Admin";
+
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("token");
+        const token = getActiveToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
     res => res,
     err => {
         if (err.response?.status === 401) {
-
-            const token = localStorage.getItem("token");
-
-            if (token) {
-                toast.error("Oturum süreniz doldu, tekrar giriş yapın");
+            const isAdminPage = window.location.pathname.startsWith("/admin");
+            if (isAdminPage) {
+                sessionStorage.removeItem("adminToken");
+                toast.error("Oturum süreniz doldu.");
+                window.location.href = "/admin";
+            } else {
                 localStorage.removeItem("token");
+                toast.error("Oturum süreniz doldu, tekrar giriş yapın.");
                 window.location.href = "/giris";
             }
-
         }
         return Promise.reject(err);
     }
 );
-
 
 export default api;

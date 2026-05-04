@@ -46,7 +46,7 @@ const KategoriUrunleri = () => {
         }
 
         try {
-            await api.post("/Favoriler/ekle-cikar", { urunId });
+            await api.post("/Favoriler/toggle", { urunId });
 
             const isAdding = !favoriler.includes(urunId);
 

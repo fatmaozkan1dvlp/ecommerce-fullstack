@@ -56,11 +56,11 @@ const UrunGuncelle = () => {
         setIsSubmitting(true);
 
         const dto = {
-            Ad: ad,
-            Fiyat: parseFloat(fiyat),
-            Stok: parseInt(stok),
-            Aciklama: aciklama,
-            KategoriId: parseInt(kategoriId)
+            ad: ad,
+            fiyat: parseFloat(fiyat),
+            stok: parseInt(stok),
+            aciklama: aciklama,
+            kategoriId: parseInt(kategoriId)
         };
 
         try {

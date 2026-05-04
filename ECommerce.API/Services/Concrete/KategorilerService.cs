@@ -1,4 +1,5 @@
 ﻿using ECommerce.API.Data;
+using ECommerce.API.DTOs;
 using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -21,25 +22,44 @@ namespace ECommerce.API.Services.Concrete
                 .ToListAsync();
         }
 
-        public async Task<Kategori> PostKategoriAsync(Kategori kategori)
+        public async Task<(bool BasariliMi, string Mesaj, Kategori? Data)> PostKategoriAsync(KategoriEkleDto dto)
         {
-            kategori.OlusturmaTarih = DateTime.Now;
-            kategori.SilindiMi = false;
+            var mevcutVarMi = await _context.Kategoriler
+                .AnyAsync(k => k.Ad.ToLower() == dto.Ad.ToLower() && !k.SilindiMi);
+
+            if (mevcutVarMi)
+                return (false, "Bu isimde bir kategori zaten mevcut.", null);
+
+            var kategori = new Kategori
+            {
+                Ad = dto.Ad,
+                OlusturmaTarih = DateTime.Now,
+                SilindiMi = false
+            };
 
             _context.Kategoriler.Add(kategori);
             await _context.SaveChangesAsync();
 
-            return kategori;
+            return (true, "Kategori oluşturuldu.", kategori);
         }
 
-        public async Task<(bool BasariliMi, string Mesaj)> KategoriGuncelleAsync(int id, Kategori guncelKategori)
+        public async Task<(bool BasariliMi, string Mesaj)> KategoriGuncelleAsync(int id, KategoriGuncelleDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Ad))
+                return (false, "Kategori adı boş olamaz.");
+
             var mevcutKategori = await _context.Kategoriler.FindAsync(id);
 
             if (mevcutKategori == null)
                 return (false, "Kategori bulunamadı.");
 
-            mevcutKategori.Ad = guncelKategori.Ad;
+            var isimKullanimdaMi = await _context.Kategoriler
+                .AnyAsync(k => k.Ad.ToLower() == dto.Ad.ToLower() && k.ID != id && !k.SilindiMi);
+
+            if (isimKullanimdaMi)
+                return (false, "Bu isimde başka bir kategori zaten mevcut.");
+
+            mevcutKategori.Ad = dto.Ad;
             await _context.SaveChangesAsync();
 
             return (true, "Kategori güncellendi.");
@@ -66,7 +86,7 @@ namespace ECommerce.API.Services.Concrete
 
             await _context.SaveChangesAsync();
 
-            return (true, $"{kategori.Ad} kategorisi ve içindeki {bagliUrunler.Count} ürün başarıyla arşivlendi.");
+            return (true, $"{kategori.Ad} ve {bagliUrunler.Count} ürün arşivlendi.");
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> KategoriKaliciSilAsync(int id)
@@ -80,7 +100,7 @@ namespace ECommerce.API.Services.Concrete
                 .AnyAsync(u => u.KategoriId == id && !u.SilindiMi);
 
             if (aktifUrunVarMi)
-                return (false, "Bu kategoride aktif ürünler var. Önce ürünleri silmeli veya başka kategoriye taşımalısınız.");
+                return (false, "Aktif ürünler var. Önce ürünleri arşivleyin.");
 
             var arsivdeUrunVarMi = await _context.Urunler
                 .AnyAsync(u => u.KategoriId == id && u.SilindiMi);
@@ -89,13 +109,13 @@ namespace ECommerce.API.Services.Concrete
             {
                 kategori.SilindiMi = true;
                 await _context.SaveChangesAsync();
-                return (true, "Kategoride arşivlenmiş ürünler bulunduğu için kategori arşive taşındı.");
+                return (true, "Arşivlenmiş ürünler bulunduğu için kategori arşive taşındı.");
             }
 
             _context.Kategoriler.Remove(kategori);
             await _context.SaveChangesAsync();
 
-            return (true, "Kategori (içinde ürün bulunmadığı için) kalıcı olarak silindi.");
+            return (true, "Kategori kalıcı olarak silindi.");
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> ArsivdenCikarAsync(int id)
@@ -109,17 +129,9 @@ namespace ECommerce.API.Services.Concrete
                 return (false, $"{kategori.Ad} zaten yayında.");
 
             kategori.SilindiMi = false;
-
-            var bagliUrunler = await _context.Urunler
-                .Where(u => u.KategoriId == id && u.SilindiMi)
-                .ToListAsync();
-
-            foreach (var urun in bagliUrunler)
-                urun.SilindiMi = false;
-
             await _context.SaveChangesAsync();
 
-            return (true, $"{kategori.Ad} kategorisi ve bağlı ürünleri artık görüntülenebilir.");
+            return (true, $"{kategori.Ad} kategorisi aktif edildi. Ürünleri ayrıca yönetebilirsiniz.");
         }
 
         public async Task<List<Kategori>> GetArsivlenenKategorilerAsync()

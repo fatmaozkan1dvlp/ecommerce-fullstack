@@ -20,47 +20,47 @@ namespace ECommerce.API.Services.Concrete
             return await _context.Favoriler
                 .Include(x => x.Urun)
                     .ThenInclude(u => u.Resimler)
-                .Where(x => x.KullaniciId == kullaniciId)
+                .Where(x => x.KullaniciId == kullaniciId && !x.Urun.SilindiMi)
                 .Select(f => new FavorilerDto
                 {
                     Id = f.Id,
                     UrunId = f.UrunId,
-                    UrunAd = f.Urun != null ? f.Urun.Ad : "Ürün bulunamadı",
-                    Fiyat = f.Urun != null ? f.Urun.Fiyat : 0,
-
-                    Gorsel = f.Urun != null && f.Urun.Resimler.Any()
-                        ? f.Urun.Resimler.First().Url
-                        : "varsayilan.jpg"
+                    UrunAd = f.Urun.Ad,
+                    Fiyat = f.Urun.Fiyat,
+                    Gorsel = f.Urun.Resimler
+                        .OrderBy(r => r.SiraNo)
+                        .Select(r => r.Url)
+                        .FirstOrDefault() ?? "varsayilan.jpg"
                 })
                 .ToListAsync();
         }
 
-        public async Task<string> ToggleFavoriteAsync(FavoriIslemDto dto)
+        public async Task<(bool BasariliMi, string Mesaj)> ToggleFavoriteAsync(int kullaniciId, int urunId)
         {
-            var urun = await _context.Urunler.FindAsync(dto.UrunId);
+            var urun = await _context.Urunler
+                .FirstOrDefaultAsync(u => u.ID == urunId && !u.SilindiMi);
 
             if (urun == null)
-                return "Ürün bulunamadı";
+                return (false, "Ürün bulunamadı.");
 
             var mevcut = await _context.Favoriler
-                .FirstOrDefaultAsync(x => x.KullaniciId == dto.KullaniciId && x.UrunId == dto.UrunId);
+                .FirstOrDefaultAsync(x => x.KullaniciId == kullaniciId && x.UrunId == urunId);
 
             if (mevcut != null)
             {
                 _context.Favoriler.Remove(mevcut);
                 await _context.SaveChangesAsync();
-                return "Favorilerden çıkarıldı.";
+                return (true, "Favorilerden çıkarıldı.");
             }
 
             await _context.Favoriler.AddAsync(new Favoriler
             {
-                KullaniciId = dto.KullaniciId,
-                UrunId = dto.UrunId
+                KullaniciId = kullaniciId,
+                UrunId = urunId
             });
 
             await _context.SaveChangesAsync();
-
-            return "Favorilere eklendi.";
+            return (true, "Favorilere eklendi.");
         }
 
         public async Task<bool> IsInFavoriteAsync(int kullaniciId, int urunId)

@@ -86,7 +86,6 @@ const Urunler = () => {
         }
 
         return sonuc.sort((a, b) => {
-            // Stok değerlerini güvenli al (büyük/küçük harf duyarlılığı için)
             const stokA = a?.stok ?? a?.Stok ?? 0;
             const stokB = b?.stok ?? b?.Stok ?? 0;
 
@@ -166,10 +165,8 @@ const Urunler = () => {
                             <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {filtreliUrunler.length > 0 ? (
                                     filtreliUrunler.map((u) => {
-                                        // RESİM URL DÜZELTME MANTIĞI:
                                         let resimUrl = null;
                                         if (u.galeri && u.galeri.length > 0) {
-                                            // URL zaten slash ile başlıyorsa çift slash olmasın diye kontrol ekliyoruz
                                             const path = u.galeri[0];
                                             const cleanPath = path.startsWith('/') ? path : `/${path}`;
                                             resimUrl = `${IMG_URL}${cleanPath}`;

@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
-import api from "../api";
+import api, { getUserRole } from "../api";
 
 const KullaniciGiris = () => {
     const [email, setEmail] = useState('');
     const [sifre, setSifre] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -22,27 +21,28 @@ const KullaniciGiris = () => {
                 sifre: sifre
             });
 
-            const userData = response.data;
-            const userRole = userData?.rol || userData?.Rol;
-            const token = userData?.token || userData?.Token;
+            const { Token, token } = response.data;
+            const gelen_token = Token || token;
 
-            if (userRole === "Admin") {
-                setError("Bu giriş ekranı sadece müşteriler içindir.");
-                setLoading(false);
+            if (!gelen_token) {
+                setError("Token alınamadı.");
                 return;
             }
-            
 
-            if ((userData?.message === "Giriş başarılı!" || userRole === "Musteri") && token) {
-                localStorage.setItem("token",token);
-                localStorage.setItem("user", JSON.stringify(userData));
-                navigate("/");
-            } else {
-                setError(userData?.message || userData?.mesaj || "Giriş başarısız.");
+            localStorage.setItem("token", gelen_token);
+            const rol = getUserRole();
+
+            if (rol === "Admin") {
+                localStorage.removeItem("token");
+                setError("Bu giriş ekranı sadece müşteriler içindir.");
+                return;
             }
 
+            navigate("/");
         } catch (err) {
-            const mesaj = err.response?.data?.message || err.response?.data?.mesaj || err.response?.data || "Bağlantı hatası.";
+            const mesaj = err.response?.data?.message
+                || err.response?.data?.Message
+                || "Email veya şifre hatalı.";
             setError(mesaj);
         } finally {
             setLoading(false);
@@ -51,7 +51,6 @@ const KullaniciGiris = () => {
 
     return (
         <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
-
             <button
                 onClick={() => navigate('/')}
                 className="absolute top-6 left-6 md:top-10 md:left-10 flex items-center gap-2 text-gray-400 hover:text-amber-600 transition-colors font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]"
@@ -112,7 +111,7 @@ const KullaniciGiris = () => {
                         </div>
 
                         {error && (
-                            <div className="p-4 bg-red-50 text-red-600 text-[12px] font-bold rounded-xl text-center border border-red-100 animate-pulse">
+                            <div className="p-4 bg-red-50 text-red-600 text-[12px] font-bold rounded-xl text-center border border-red-100">
                                 {error}
                             </div>
                         )}
@@ -122,25 +121,16 @@ const KullaniciGiris = () => {
                             disabled={loading}
                             className="w-full bg-gray-950 hover:bg-amber-600 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-gray-200 mt-2 disabled:opacity-70 active:scale-[0.98]"
                         >
-                            {loading ? (
-                                <Loader2 className="animate-spin" size={20} />
-                            ) : (
-                                <>
-                                    Hesabıma Gir <ArrowRight size={18} />
-                                </>
-                            )}
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : <>Hesabıma Gir <ArrowRight size={18} /></>}
                         </button>
                     </form>
                 </div>
 
                 <p className="mt-10 text-center text-[13px] text-gray-400 font-medium">
                     Bir hesabınız yok mu?{" "}
-                    <button
-                        onClick={() => navigate('/kayit')}
-                        className="text-gray-950 font-black border-b-2 border-amber-600 pb-0.5 hover:text-amber-600 transition-colors ml-1"
-                    >
+                    <Link to="/kayit" className="text-gray-950 font-black border-b-2 border-amber-600 pb-0.5 hover:text-amber-600 transition-colors ml-1">
                         KAYIT OLUN
-                    </button>
+                    </Link>
                 </p>
             </div>
         </div>

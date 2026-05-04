@@ -1,15 +1,11 @@
 import { Navigate } from "react-router-dom";
+import { isAdmin, getTokenPayload } from "../api";
 
 const AdminRoute = ({ children }) => {
-    const token = localStorage.getItem("token");
+    const payload = getTokenPayload("admin");
 
-    const adminJson = sessionStorage.getItem("adminUser");
-    const admin = adminJson ? JSON.parse(adminJson) : null;
-    const adminRole = admin?.rol || admin?.Rol;
-
-    if (!token || adminRole !== "Admin") {
-        return <Navigate to="/admin" replace />;
-    }
+    if (!payload) return <Navigate to="/admin" replace />;
+    if (!isAdmin()) return <Navigate to="/" replace />;
 
     return children;
 };

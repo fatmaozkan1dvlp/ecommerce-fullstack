@@ -5,9 +5,9 @@ namespace ECommerce.API.Services.Interfaces
     public interface ISepetService
     {
         Task<List<SepetListeDto>> GetUserCartAsync(int kullaniciId);
-        Task<bool> AddToCartAsync(SepetEkleDto sepetEkleDto);
-        Task<bool> RemoveFromCartAsync(int sepetId);
-        Task<bool> UpdateQuantityAsync(int sepetId, int yeniAdet);
-        Task<SepetToplamDto> GetCartSummary(int kullaniciId);
+        Task<(bool BasariliMi, string Mesaj)> AddToCartAsync(int kullaniciId, SepetEkleDto dto);
+        Task<(bool BasariliMi, string Mesaj)> RemoveFromCartAsync(int sepetId, int kullaniciId);
+        Task<(bool BasariliMi, string Mesaj)> UpdateQuantityAsync(int sepetId, int kullaniciId, int yeniAdet);
+        Task<SepetToplamDto> GetCartSummaryAsync(int kullaniciId);
     }
 }

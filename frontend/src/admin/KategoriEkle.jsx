@@ -18,7 +18,7 @@ const KategoriEkle = () => {
         setHata(null);
 
         try {
-            await api.post("/Kategoriler", { Ad: ad });
+            await api.post("/Kategoriler", { ad: ad });
             navigate('/admin/kategoriler');
         } catch (error) {
             console.error("Kategori ekleme hatası:", error);

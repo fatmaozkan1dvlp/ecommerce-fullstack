@@ -6,7 +6,7 @@ namespace ECommerce.API.Services.Interfaces
     public interface IUrunlerService
     {
         Task<List<UrunlerDto>> GetUrunlerAsync();
-        Task<Urun> PostUrunAsync(Urun urun);
+        Task<Urun> PostUrunAsync(UrunEkleDto dto);
         Task<object?> GetUrunByIdAsync(int id);
         Task<(bool BasariliMi, string Mesaj, object? Data)> UrunGuncelleAsync(int id, UrunGuncelleDto dto);
         Task<(bool BasariliMi, string Mesaj)> UrunArsivleAsync(int id);

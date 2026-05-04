@@ -9,7 +9,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -17,7 +16,6 @@ builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "ECommerce.API", Version = "v1" });
 
-    // JWT Tanımlaması
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -60,7 +58,6 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!)),
@@ -69,49 +66,47 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
-builder.Services.AddScoped<IKullanicilarService,KullanicilarService>();
-builder.Services.AddScoped<IKategorilerService,KategorilerService>();
-builder.Services.AddScoped<IUrunlerService,UrunlerService>();
-builder.Services.AddScoped<ISiparislerService,SiparislerService>();
+builder.Services.AddScoped<IKullanicilarService, KullanicilarService>();
+builder.Services.AddScoped<IKategorilerService, KategorilerService>();
+builder.Services.AddScoped<IUrunlerService, UrunlerService>();
+builder.Services.AddScoped<ISiparislerService, SiparislerService>();
 builder.Services.AddScoped<ISepetService, SepetService>();
 builder.Services.AddScoped<IFavorilerService, FavorilerService>();
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 
-builder.Services.AddControllers();
-
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-        policy => policy.WithOrigins("http://localhost:5173") // React Vite
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+        policy => policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 });
 
 var app = builder.Build();
 
-
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseStaticFiles();
-
-
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 
 app.Run();

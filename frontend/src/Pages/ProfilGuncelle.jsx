@@ -54,7 +54,6 @@ const ProfilGuncelle = () => {
         setLoading(true);
         setMessage({ type: "", text: "" });
 
-        // Sadece güncellenebilir alanları gönderiyoruz
         const updateData = {
             adSoyad: formData.adSoyad,
             telefon: formData.telefon,
@@ -62,7 +61,6 @@ const ProfilGuncelle = () => {
             tamAdres: formData.tamAdres
         };
 
-        // Şifre alanı doluysa ekle, boşsa hiç gönderme
         if (formData.sifre && formData.sifre.trim() !== "") {
             updateData.sifre = formData.sifre;
         }
@@ -75,14 +73,7 @@ const ProfilGuncelle = () => {
                 text: "Bilgileriniz başarıyla güncellendi!"
             });
 
-            // LocalStorage'daki adSoyad bilgisini de güncelle ki Navbar'da isim hemen değişsin
-            const currentUser = JSON.parse(localStorage.getItem("user"));
-            if (currentUser) {
-                localStorage.setItem("user", JSON.stringify({
-                    ...currentUser,
-                    adSoyad: formData.adSoyad
-                }));
-            }
+            
 
             setTimeout(() => navigate("/profil"), 1500);
         } catch (err) {

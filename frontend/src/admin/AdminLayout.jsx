@@ -23,9 +23,7 @@ const AdminLayout = ({ children }) => {
     }, [location.pathname]);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        sessionStorage.removeItem("adminUser");
-        sessionStorage.clear();
+        sessionStorage.removeItem("adminToken"); 
         navigate("/admin");
     };
 

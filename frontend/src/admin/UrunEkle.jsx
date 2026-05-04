@@ -35,7 +35,7 @@ const UrunEkle = () => {
             maxSizeMB: 1,
             maxWidthOrHeight: 1280,
             useWebWorker: true,
-            fileType: 'image/jpeg' 
+            fileType: 'image/jpeg'
         };
 
         try {
@@ -84,7 +84,7 @@ const UrunEkle = () => {
 
         setYukleniyor(true);
 
-       
+
 
         try {
             const urunRes = await api.post(`/Urunler`, urunVerisi);
@@ -169,7 +169,7 @@ const UrunEkle = () => {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 ml-1">Satış Fiyatı (₺)</label>
                                     <input
-                                        type="number" required  step="0.01" value={fiyat} min="1"
+                                        type="number" required step="0.01" value={fiyat} min="1"
                                         onChange={(e) => setFiyat(e.target.value)}
                                         onBlur={(e) => {
                                             if (e.target.value) setFiyat(parseFloat(e.target.value).toFixed(2));

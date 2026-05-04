@@ -10,16 +10,30 @@ namespace ECommerce.API.Services.Concrete
     {
         private readonly AppDbContext _context;
 
+        private static readonly string[] GecerliDurumlar =
+            { "Alındı", "Hazırlanıyor", "Kargoya Verildi", "Teslim Edildi", "İptal Edildi" };
+
         public SiparislerService(AppDbContext context)
         {
             _context = context;
         }
 
-        public async Task<(bool BasariliMi, string Mesaj, int SiparisId)> SiparisOlusturAsync(SiparisKayitDto dto)
+        public async Task<(bool BasariliMi, string Mesaj, int SiparisId)> SiparisOlusturAsync(
+            int kullaniciId, SiparisKayitDto dto)
         {
+
+            if (dto.Sepet == null || dto.Sepet.Count == 0)
+                return (false, "Sepet boş olamaz.", 0);
+
+            if (string.IsNullOrWhiteSpace(dto.TamAdres))
+                return (false, "Adres zorunludur.", 0);
+
+            if (string.IsNullOrWhiteSpace(dto.Telefon))
+                return (false, "Telefon zorunludur.", 0);
+
             var yeniSiparis = new Siparis
             {
-                KullaniciId = dto.KullaniciId,
+                KullaniciId = kullaniciId,
                 TamAdres = dto.TamAdres,
                 Sehir = dto.Sehir,
                 Telefon = dto.Telefon,
@@ -36,10 +50,10 @@ namespace ECommerce.API.Services.Concrete
                     .FirstOrDefaultAsync(u => u.ID == item.UrunId && !u.SilindiMi);
 
                 if (urun == null)
-                    return (false, $"{item.UrunId} ID'li ürün aktif değil.", 0);
+                    return (false, $"Ürün bulunamadı (ID: {item.UrunId}).", 0);
 
                 if (urun.Stok < item.Adet)
-                    return (false, $"{urun.Ad} için yetersiz stok!", 0);
+                    return (false, $"'{urun.Ad}' için yetersiz stok. Mevcut: {urun.Stok}", 0);
 
                 var detay = new SiparisDetay
                 {
@@ -49,19 +63,26 @@ namespace ECommerce.API.Services.Concrete
                 };
 
                 yeniSiparis.SiparisDetaylari.Add(detay);
-                yeniSiparis.ToplamTutar += (detay.BirimFiyat * detay.Adet);
-
+                yeniSiparis.ToplamTutar += detay.BirimFiyat * detay.Adet;
                 urun.Stok -= item.Adet;
             }
 
             _context.Siparisler.Add(yeniSiparis);
+            var kullaniciSepeti = await _context.Sepetler
+                                .Where(s => s.KullaniciId == kullaniciId)
+                                .ToListAsync();
+
+            _context.Sepetler.RemoveRange(kullaniciSepeti);
             await _context.SaveChangesAsync();
 
-            return (true, "Sipariş başarıyla alındı", yeniSiparis.ID);
+            return (true, "Sipariş başarıyla alındı.", yeniSiparis.ID);
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> DurumGuncelleAsync(SiparisDurumGuncelleDto dto)
         {
+            if (!GecerliDurumlar.Contains(dto.YeniDurum))
+                return (false, $"Geçersiz durum. Geçerli değerler: {string.Join(", ", GecerliDurumlar)}");
+
             var siparis = await _context.Siparisler.FindAsync(dto.SiparisId);
 
             if (siparis == null)
@@ -75,9 +96,15 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<object> GetDashboardOzetAsync()
         {
-            var toplamSatis = await _context.Siparisler.Where(s => s.Durum != "İptal Edildi").SumAsync(s => (decimal?)s.ToplamTutar) ?? 0;
-            var siparisSayisi = await _context.Siparisler.CountAsync(s => s.Durum != "İptal Edildi");
-            var urunSayisi = await _context.Urunler.CountAsync(u => !u.SilindiMi);
+            var toplamSatis = await _context.Siparisler
+                .Where(s => s.Durum != "İptal Edildi")
+                .SumAsync(s => (decimal?)s.ToplamTutar) ?? 0;
+
+            var siparisSayisi = await _context.Siparisler
+                .CountAsync(s => s.Durum != "İptal Edildi");
+
+            var urunSayisi = await _context.Urunler
+                .CountAsync(u => !u.SilindiMi);
 
             var sonSiparisler = await _context.Siparisler
                 .Include(s => s.Kullanici)
@@ -89,7 +116,7 @@ namespace ECommerce.API.Services.Concrete
                     s.SiparisTarihi,
                     s.ToplamTutar,
                     s.Durum,
-                    MusteriAdi = s.Kullanici != null ? s.Kullanici.AdSoyad : "Bilinmeyen Müşteri"
+                    MusteriAdi = s.Kullanici != null ? s.Kullanici.AdSoyad : "Bilinmeyen"
                 })
                 .ToListAsync();
 
@@ -104,7 +131,9 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<List<object>> SiparisleriGetirByDurumAsync(string durum)
         {
-            var query = _context.Siparisler.AsQueryable();
+            var query = _context.Siparisler
+                .Include(s => s.Kullanici)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(durum) && durum != "Hepsi")
                 query = query.Where(s => s.Durum == durum);
@@ -116,14 +145,15 @@ namespace ECommerce.API.Services.Concrete
                     s.ID,
                     s.SiparisTarihi,
                     s.ToplamTutar,
-                    s.Durum
+                    s.Durum,
+                    MusteriAdi = s.Kullanici != null ? s.Kullanici.AdSoyad : "Bilinmeyen"
                 })
                 .ToListAsync();
 
             return result.Cast<object>().ToList();
         }
 
-        public async Task<object?> GetSiparisDetayAsync(int id)
+        public async Task<object?> GetSiparisDetayAsync(int id, int kullaniciId, bool isAdmin)
         {
             var siparis = await _context.Siparisler
                 .Include(s => s.Kullanici)
@@ -134,10 +164,13 @@ namespace ECommerce.API.Services.Concrete
 
             if (siparis == null) return null;
 
+            if (!isAdmin && siparis.KullaniciId != kullaniciId)
+                return null;
+
             return new
             {
                 id = siparis.ID,
-                musteriAdi = siparis.Kullanici?.AdSoyad ?? "Müşteri Bilgisi Yok",
+                musteriAdi = siparis.Kullanici?.AdSoyad ?? "Bilinmeyen",
                 telefon = siparis.Telefon,
                 adres = $"{siparis.TamAdres} / {siparis.Sehir}",
                 toplamTutar = siparis.ToplamTutar,
@@ -152,9 +185,53 @@ namespace ECommerce.API.Services.Concrete
                         .Select(r => r.Url)
                         .FirstOrDefault() ?? "",
                     adet = d.Adet,
-                    birimFiyat = d.BirimFiyat
+                    birimFiyat = d.BirimFiyat,
+                    araToplam = d.Adet * d.BirimFiyat
                 }).ToList()
             };
+        }
+
+        public async Task<List<object>> GetKullanicininSiparisleriAsync(int kullaniciId)
+        {
+            var siparisler = await _context.Siparisler
+                .Where(s => s.KullaniciId == kullaniciId)
+                .OrderByDescending(s => s.SiparisTarihi)
+                .Select(s => new
+                {
+                    s.ID,
+                    s.SiparisTarihi,
+                    s.ToplamTutar,
+                    s.Durum
+                })
+                .ToListAsync();
+
+            return siparisler.Cast<object>().ToList();
+        }
+
+
+        public async Task<(bool BasariliMi, string Mesaj)> SiparisIptalEtAsync(int siparisId, int kullaniciId)
+        {
+            var siparis = await _context.Siparisler
+                .Include(s => s.SiparisDetaylari)
+                .FirstOrDefaultAsync(s => s.ID == siparisId && s.KullaniciId == kullaniciId);
+
+            if (siparis == null)
+                return (false, "Sipariş bulunamadı.");
+
+            if (siparis.Durum != "Alındı")
+                return (false, "Yalnızca 'Alındı' durumundaki siparişler iptal edilebilir.");
+
+            foreach (var detay in siparis.SiparisDetaylari)
+            {
+                var urun = await _context.Urunler.FindAsync(detay.UrunId);
+                if (urun != null)
+                    urun.Stok += detay.Adet;
+            }
+
+            siparis.Durum = "İptal Edildi";
+            await _context.SaveChangesAsync();
+
+            return (true, "Sipariş iptal edildi ve stoklar güncellendi.");
         }
     }
 }

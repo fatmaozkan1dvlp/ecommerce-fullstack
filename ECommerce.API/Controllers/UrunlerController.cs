@@ -26,10 +26,15 @@ namespace ECommerce.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Urun>> PostUrun([FromBody] Urun urun)
+        public async Task<ActionResult> PostUrun([FromBody] UrunEkleDto dto)
         {
-            var yeniUrun = await _urunlerService.PostUrunAsync(urun);
-            return Ok(yeniUrun);
+            var yeniUrun = await _urunlerService.PostUrunAsync(dto);
+            return Ok(new
+            {
+                Message = "Ürün başarıyla eklendi.",
+                Id = yeniUrun.ID,
+                Ad = yeniUrun.Ad
+            });
         }
 
         [HttpGet("{id}")]
@@ -106,9 +111,10 @@ namespace ECommerce.API.Controllers
 
         [HttpPost("{id}/resim-ekle")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ResimEkle(int id, IFormFile dosya)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ResimEkle(int id, [FromForm] ResimEkleDto request)
         {
-            var sonuc = await _urunlerService.ResimEkleAsync(id, dosya);
+            var sonuc = await _urunlerService.ResimEkleAsync(id, request.Dosya);
 
             if (!sonuc.BasariliMi)
             {

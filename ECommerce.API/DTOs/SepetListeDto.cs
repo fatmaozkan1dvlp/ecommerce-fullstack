@@ -15,7 +15,7 @@
     {
         public int UrunId { get; set; }
         public int Adet { get; set; }
-        public int KullaniciId { get; set; }
+     
     }
     public class SepetToplamDto
 {

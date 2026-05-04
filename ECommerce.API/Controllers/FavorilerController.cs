@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ECommerce.API.DTOs;
 using ECommerce.API.Services.Interfaces;
-using ECommerce.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace ECommerce.API.Controllers
@@ -11,42 +11,42 @@ namespace ECommerce.API.Controllers
     [ApiController]
     public class FavorilerController : ControllerBase
     {
-        private readonly IFavorilerService _favoriService;
+        private readonly IFavorilerService _favorilerService;
 
-        public FavorilerController(IFavorilerService favoriService)
+        public FavorilerController(IFavorilerService favorilerService)
         {
-            _favoriService = favoriService;
+            _favorilerService = favorilerService;
         }
+
+        private int GetUserId() =>
+            int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetFavoriler()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            var result = await _favoriService.GetUserFavoritesAsync(userId);
-
+            var result = await _favorilerService.GetUserFavoritesAsync(GetUserId());
             return Ok(result);
         }
 
-        [HttpPost("ekle-cikar")]
-        public async Task<IActionResult> ToggleFavori([FromBody]FavoriIslemDto dto)
+        [HttpPost("toggle")]
+        public async Task<IActionResult> Toggle([FromBody] FavoriIslemDto dto)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var result = await _favorilerService
+                .ToggleFavoriteAsync(GetUserId(), dto.UrunId);
 
-            dto.KullaniciId = userId;
+            if (!result.BasariliMi)
+                return BadRequest(new { Message = result.Mesaj });
 
-            var result = await _favoriService.ToggleFavoriteAsync(dto);
-
-            return Ok(new { message = result });
+            return Ok(new { Message = result.Mesaj });
         }
+
         [HttpGet("kontrol/{urunId}")]
-        public async Task<IActionResult> IsFavorite(int urunId)
+        public async Task<IActionResult> IsInFavorite(int urunId)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var result = await _favorilerService
+                .IsInFavoriteAsync(GetUserId(), urunId);
 
-            var result = await _favoriService.IsInFavoriteAsync(userId, urunId);
-
-            return Ok(result);
+            return Ok(new { IsFavorite = result });
         }
     }
 }

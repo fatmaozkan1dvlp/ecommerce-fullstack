@@ -30,11 +30,11 @@ namespace ECommerce.API.Services.Concrete
 
             var claims = new[]
             {
-            new Claim(ClaimTypes.NameIdentifier, kullanici.ID.ToString()),
-            new Claim(ClaimTypes.Email, kullanici.EMail),
-            new Claim(ClaimTypes.Name, kullanici.AdSoyad),
-            new Claim(ClaimTypes.Role, kullanici.Rol) 
-        };
+                new Claim(ClaimTypes.NameIdentifier, kullanici.ID.ToString()),
+                new Claim(ClaimTypes.Email, kullanici.EMail),
+                new Claim(ClaimTypes.Name, kullanici.AdSoyad),
+                new Claim(ClaimTypes.Role, kullanici.Rol)
+            };
 
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
@@ -47,11 +47,9 @@ namespace ECommerce.API.Services.Concrete
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
-
         public async Task<List<MusteriListeDto>> GetMusterilerAsync()
         {
-            var musteriler = await _context.Kullanicilar
+            return await _context.Kullanicilar
                 .Where(u => !u.SilindiMi && u.Rol == "Musteri")
                 .Select(u => new MusteriListeDto
                 {
@@ -66,8 +64,6 @@ namespace ECommerce.API.Services.Concrete
                 })
                 .OrderByDescending(u => u.OlusturmaT)
                 .ToListAsync();
-
-            return musteriler;
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> RegisterAsync(KullaniciRegisterDto dto)
@@ -76,13 +72,16 @@ namespace ECommerce.API.Services.Concrete
             if (!emailRegex.IsMatch(dto.EMail))
                 return (false, "Geçersiz bir e-posta formatı girdiniz.");
 
-            if (dto.Telefon.Length != 11 || !dto.Telefon.All(char.IsDigit))
-                return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır (Örn: 05xxxxxxxxx).");
-            bool emailVarMi = await _context.Kullanicilar
-                .AnyAsync(u => u.EMail == dto.EMail);
-
             if (dto.Sifre.Length < 6)
                 return (false, "Şifre en az 6 karakter olmalıdır.");
+
+            if (string.IsNullOrWhiteSpace(dto.Telefon) ||
+                dto.Telefon.Length != 11 ||
+                !dto.Telefon.All(char.IsDigit))
+                return (false, "Telefon numarası 11 haneli rakamlardan oluşmalıdır (Örn: 05xxxxxxxxx).");
+
+            bool emailVarMi = await _context.Kullanicilar
+                .AnyAsync(u => u.EMail == dto.EMail);
 
             if (emailVarMi)
                 return (false, "Bu email zaten kayıtlı.");
@@ -94,7 +93,7 @@ namespace ECommerce.API.Services.Concrete
                 AdSoyad = dto.AdSoyad,
                 EMail = dto.EMail,
                 SifreHash = passwordHash,
-                Telefon=dto.Telefon,
+                Telefon = dto.Telefon,
                 Rol = "Musteri",
                 OlusturmaT = DateTime.Now,
                 SilindiMi = false
@@ -111,19 +110,13 @@ namespace ECommerce.API.Services.Concrete
             var kullanici = await _context.Kullanicilar
                 .FirstOrDefaultAsync(u => u.EMail == dto.EMail && !u.SilindiMi);
 
-            if (kullanici == null)
-                return (false, "Kullanıcı bulunamadı.", null);
-
-            bool sifreDogruMu = BCrypt.Net.BCrypt.Verify(dto.Sifre, kullanici.SifreHash);
-
-            if (!sifreDogruMu)
-                return (false, "Hatalı şifre.", null);
+            if (kullanici == null || !BCrypt.Net.BCrypt.Verify(dto.Sifre, kullanici.SifreHash))
+                return (false, "Email veya şifre hatalı.", null);
 
             var token = GenerateJwtToken(kullanici);
 
             var sonuc = new
             {
-                Message = "Giriş başarılı!",
                 Token = token,
                 AdSoyad = kullanici.AdSoyad,
                 Rol = kullanici.Rol,
@@ -141,38 +134,38 @@ namespace ECommerce.API.Services.Concrete
             if (kullanici == null)
                 return (false, "Kullanıcı bulunamadı.");
 
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            if (!string.IsNullOrWhiteSpace(dto.EMail) && dto.EMail != "string")
+            {
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                if (!emailRegex.IsMatch(dto.EMail))
+                    return (false, "Geçersiz bir e-posta formatı girdiniz.");
 
-            if (!emailRegex.IsMatch(dto.EMail))
-                return (false, "Geçersiz bir e-posta formatı girdiniz.");
+                bool emailKullanimda = await _context.Kullanicilar
+                    .AnyAsync(u => u.EMail == dto.EMail && u.ID != id);
 
-            if (dto.Telefon.Length != 11 || !dto.Telefon.All(char.IsDigit))
-                return (false, "Telefon numarası sadece rakamlardan oluşmalı ve 11 hane olmalıdır.");
+                if (emailKullanimda)
+                    return (false, "Bu email zaten başka kullanıcıda var.");
 
-            bool emailKullanimda = await _context.Kullanicilar
-                .AnyAsync(u => u.EMail == dto.EMail && u.ID != id);
+                kullanici.EMail = dto.EMail;
+            }
 
-            if (emailKullanimda)
-                return (false, "Bu email zaten başka kullanıcıda var.");
+            if (!string.IsNullOrWhiteSpace(dto.Telefon) && dto.Telefon != "string")
+            {
+                if (dto.Telefon.Length != 11 || !dto.Telefon.All(char.IsDigit))
+                    return (false, "Telefon numarası 11 haneli rakamlardan oluşmalıdır.");
 
-            // 🔥 GÜNCELLEME BLOĞU (CLEAN)
+                kullanici.Telefon = dto.Telefon;
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.AdSoyad) && dto.AdSoyad != "string")
                 kullanici.AdSoyad = dto.AdSoyad;
 
-            if (!string.IsNullOrWhiteSpace(dto.EMail) && dto.EMail != "string")
-                kullanici.EMail = dto.EMail;
-
             if (!string.IsNullOrWhiteSpace(dto.Sehir) && dto.Sehir != "string")
                 kullanici.Sehir = dto.Sehir;
-
-            if (!string.IsNullOrWhiteSpace(dto.Telefon) && dto.Telefon != "string")
-                kullanici.Telefon = dto.Telefon;
 
             if (!string.IsNullOrWhiteSpace(dto.TamAdres) && dto.TamAdres != "string")
                 kullanici.TamAdres = dto.TamAdres;
 
-            // 🔥 TEK ŞİFRE UPDATE (FIX)
             if (!string.IsNullOrWhiteSpace(dto.Sifre) && dto.Sifre != "string")
             {
                 if (dto.Sifre.Length < 6)
@@ -182,7 +175,6 @@ namespace ECommerce.API.Services.Concrete
             }
 
             await _context.SaveChangesAsync();
-
             return (true, "Bilgileriniz güncellendi.");
         }
 
@@ -207,10 +199,8 @@ namespace ECommerce.API.Services.Concrete
                 Sehir = kullanici.Sehir,
                 TamAdres = kullanici.TamAdres,
                 KayitTarihi = kullanici.OlusturmaT,
-
                 ToplamSiparisSayisi = siparisler.Count,
                 ToplamHarcama = siparisler.Sum(s => s.ToplamTutar),
-
                 SonSiparisler = siparisler.Take(5).Select(s => new RecentOrderDto
                 {
                     SiparisId = s.ID,
@@ -220,6 +210,5 @@ namespace ECommerce.API.Services.Concrete
                 }).ToList()
             };
         }
-
     }
 }

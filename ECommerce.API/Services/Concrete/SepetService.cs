@@ -19,85 +19,102 @@ namespace ECommerce.API.Services.Concrete
         {
             return await _context.Sepetler
                 .Include(x => x.Urun)
-                .Where(x => x.KullaniciId == kullaniciId)
+                    .ThenInclude(u => u.Resimler)
+                .Where(x => x.KullaniciId == kullaniciId && !x.Urun.SilindiMi)
                 .Select(s => new SepetListeDto
                 {
                     Id = s.Id,
                     UrunId = s.UrunId,
                     UrunAd = s.Urun.Ad,
                     Fiyat = s.Urun.Fiyat,
-                    Gorsel = s.Urun.Resimler.FirstOrDefault() != null
-                     ? s.Urun.Resimler.FirstOrDefault().Url
-                     : "varsayilan.jpg",
+                    Gorsel = s.Urun.Resimler
+                        .OrderBy(r => r.SiraNo)
+                        .Select(r => r.Url)
+                        .FirstOrDefault() ?? "varsayilan.jpg",
                     Adet = s.Adet,
                     Stok = s.Urun.Stok
-                }).ToListAsync();
+                })
+                .ToListAsync();
         }
 
-        public async Task<bool> AddToCartAsync(SepetEkleDto dto)
+        public async Task<(bool BasariliMi, string Mesaj)> AddToCartAsync(int kullaniciId, SepetEkleDto dto)
         {
-            var urun = await _context.Urunler.FindAsync(dto.UrunId);
+            if (dto.Adet < 1)
+                return (false, "Adet en az 1 olmalıdır.");
+
+            var urun = await _context.Urunler
+                .FirstOrDefaultAsync(u => u.ID == dto.UrunId && !u.SilindiMi);
 
             if (urun == null)
-                return false;
+                return (false, "Ürün bulunamadı.");
+
+            if (urun.Stok == 0)
+                return (false, "Ürün stokta yok.");
 
             var mevcut = await _context.Sepetler
-                .FirstOrDefaultAsync(x => x.KullaniciId == dto.KullaniciId && x.UrunId == dto.UrunId);
+                .FirstOrDefaultAsync(x => x.KullaniciId == kullaniciId && x.UrunId == dto.UrunId);
 
-            int toplamAdet = dto.Adet;
-
-            if (mevcut != null)
-                toplamAdet += mevcut.Adet;
+            int toplamAdet = dto.Adet + (mevcut?.Adet ?? 0);
 
             if (toplamAdet > urun.Stok)
-                return false;
+                return (false, $"Stok yetersiz. Mevcut stok: {urun.Stok}");
 
             if (mevcut != null)
-            {
                 mevcut.Adet += dto.Adet;
-            }
             else
-            {
                 await _context.Sepetler.AddAsync(new Sepet
                 {
-                    KullaniciId = dto.KullaniciId,
+                    KullaniciId = kullaniciId,
                     UrunId = dto.UrunId,
                     Adet = dto.Adet
                 });
-            }
 
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
+            return (true, "Ürün sepete eklendi.");
         }
 
-        public async Task<bool> RemoveFromCartAsync(int sepetId)
+        public async Task<(bool BasariliMi, string Mesaj)> RemoveFromCartAsync(int sepetId, int kullaniciId)
         {
-            var urun = await _context.Sepetler.FindAsync(sepetId);
-            if (urun == null) return false;
+            var sepetUrun = await _context.Sepetler
+                .FirstOrDefaultAsync(s => s.Id == sepetId && s.KullaniciId == kullaniciId); 
 
-            _context.Sepetler.Remove(urun);
-            return await _context.SaveChangesAsync() > 0;
+            if (sepetUrun == null)
+                return (false, "Sepet kaydı bulunamadı.");
+
+            _context.Sepetler.Remove(sepetUrun);
+            await _context.SaveChangesAsync();
+            return (true, "Ürün sepetten çıkarıldı.");
         }
 
-        public async Task<bool> UpdateQuantityAsync(int sepetId, int yeniAdet)
+        public async Task<(bool BasariliMi, string Mesaj)> UpdateQuantityAsync(int sepetId, int kullaniciId, int yeniAdet)
         {
-            var urunSepet = await _context.Sepetler.FindAsync(sepetId);
-            if (urunSepet == null || yeniAdet < 1)
-                return false;
+            if (yeniAdet < 1)
+                return (false, "Adet en az 1 olmalıdır.");
 
-            var urun = await _context.Urunler.FindAsync(urunSepet.UrunId);
+            var sepetUrun = await _context.Sepetler
+                .FirstOrDefaultAsync(s => s.Id == sepetId && s.KullaniciId == kullaniciId); 
 
-            if (urun == null || yeniAdet > urun.Stok)
-                return false;
+            if (sepetUrun == null)
+                return (false, "Sepet kaydı bulunamadı.");
 
-            urunSepet.Adet = yeniAdet;
+            var urun = await _context.Urunler.FindAsync(sepetUrun.UrunId);
 
-            return await _context.SaveChangesAsync() > 0;
+            if (urun == null)
+                return (false, "Ürün bulunamadı.");
+
+            if (yeniAdet > urun.Stok)
+                return (false, $"Stok yetersiz. Mevcut stok: {urun.Stok}");
+
+            sepetUrun.Adet = yeniAdet;
+            await _context.SaveChangesAsync();
+            return (true, "Adet güncellendi.");
         }
-        public async Task<SepetToplamDto> GetCartSummary(int kullaniciId)
+
+        public async Task<SepetToplamDto> GetCartSummaryAsync(int kullaniciId)
         {
             var sepet = await _context.Sepetler
                 .Include(x => x.Urun)
-                .Where(x => x.KullaniciId == kullaniciId)
+                .Where(x => x.KullaniciId == kullaniciId && !x.Urun.SilindiMi)
                 .ToListAsync();
 
             var liste = sepet.Select(s => new SepetListeDto
@@ -109,12 +126,10 @@ namespace ECommerce.API.Services.Concrete
                 Adet = s.Adet
             }).ToList();
 
-            var toplam = liste.Sum(x => x.Fiyat * x.Adet);
-
             return new SepetToplamDto
             {
                 Urunler = liste,
-                ToplamFiyat = toplam
+                ToplamFiyat = liste.Sum(x => x.Fiyat * x.Adet)
             };
         }
     }
