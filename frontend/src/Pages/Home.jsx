@@ -171,7 +171,7 @@ const Home = () => {
                             return (
                                 <div key={u.id || u.ID} className="group flex flex-col">
                                     <div className="relative aspect-[3/4] rounded-[2rem] overflow-hidden bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 group-hover:shadow-xl transition-all duration-500">
-                                        <Link to={`/urun/${u.id || u.ID}`}>
+                                        <Link to={`/urun/${u.slug || u.id || u.ID}`}>
                                             <img src={resimUrl} alt={u.ad} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                         </Link>
                                         <button
@@ -188,7 +188,7 @@ const Home = () => {
                                     </div>
                                     <div className="mt-4 px-1">
                                         <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">{u.kategoriAd || "DECO"}</span>
-                                        <Link to={`/urun/${u.id || u.ID}`}>
+                                        <Link to={`/urun/${u.slug || u.id || u.ID}`}>
                                             <h3 className="text-sm md:text-base font-serif italic font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-amber-600 transition-colors">{u.ad || u.Ad}</h3>
                                         </Link>
                                         <p className="text-lg font-black tracking-tighter mt-1">₺{parseFloat(u.fiyat || u.Fiyat || 0).toFixed(2)}</p>

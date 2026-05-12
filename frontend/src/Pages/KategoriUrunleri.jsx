@@ -5,7 +5,7 @@ import { ShoppingBag, Heart, ArrowDownUp, ChevronDown, Plus, CheckCircle2 } from
 import UserLayout from './UserLayout';
 
 const KategoriUrunleri = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const [urunler, setUrunler] = useState([]);
     const [kategoriAd, setKategoriAd] = useState('');
     const [yukleniyor, setYukleniyor] = useState(true);
@@ -69,11 +69,11 @@ const KategoriUrunleri = () => {
 
     useEffect(() => {
         const fetchVeri = async () => {
-            if (!id) return;
+            if (!slug) return;
 
             setYukleniyor(true);
             try {
-                const res = await api.get(`/Urunler/Kategori/${id}`);
+                const res = await api.get(`/Urunler/kategori/slug/${slug}`);
 
                 const gelenVeri = Array.isArray(res.data) ? res.data : [];
                 setUrunler(gelenVeri);
@@ -102,7 +102,7 @@ const KategoriUrunleri = () => {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
 
-    }, [id]);
+    }, [slug]);
 
     const loadMore = () => {
         setVisibleCount(prev => prev + 12);
@@ -233,7 +233,7 @@ const KategoriUrunleri = () => {
 
                             return (
                                 <div key={urun?.id || urun?.ID} className="group flex flex-col">
-                                    <Link to={`/urun/${urun.id || urun.ID}`} className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-[#F5F5F5] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1.5">
+                                    <Link to={`/urun/${urun.slug || urun.id || urun.ID}`} className="relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-[#F5F5F5] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1.5">
                                         <img
                                             src={gosterilecekResim}
                                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -283,7 +283,7 @@ const KategoriUrunleri = () => {
                                                 </span>
                                             )}
                                         </div>
-                                        <Link to={`/urun/${urun.id || urun.ID}`}>
+                                        <Link to={`/urun/${urun.slug || urun.id || urun.ID}`}>
                                             <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-amber-600 transition-colors line-clamp-1 italic font-serif">
                                                 {urun.ad || urun.Ad}
                                             </h3>

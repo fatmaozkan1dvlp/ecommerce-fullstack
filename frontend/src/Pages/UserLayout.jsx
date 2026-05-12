@@ -146,7 +146,7 @@ function UserLayout({ children }) {
                         </div>
                         <nav className="flex-1 space-y-2 overflow-y-auto pr-2">
                             {categories.map((cat, i) => (
-                                <Link key={i} to={`/kategori/${cat.id || cat.ID}`} onClick={() => setIsMenuOpen(false)} className="group flex items-center p-4 rounded-2xl hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all border border-transparent hover:border-amber-100">
+                                <Link key={i} to={`/kategori/${cat.slug || cat.id || cat.ID}`} onClick={() => setIsMenuOpen(false)} className="group flex items-center p-4 rounded-2xl hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all border border-transparent hover:border-amber-100">
                                     <div className="flex-1">
                                         <h4 className="text-base font-bold text-gray-800 dark:text-gray-100 group-hover:text-amber-600 transition-colors">{cat.ad || cat.Ad}</h4>
                                         <p className="text-[9px] text-gray-400 mt-0.5 uppercase tracking-wider">Koleksiyonu İncele</p>

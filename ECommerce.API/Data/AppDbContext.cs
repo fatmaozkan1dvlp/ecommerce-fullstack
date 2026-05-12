@@ -24,6 +24,16 @@ namespace ECommerce.API.Data
             modelBuilder.Entity<Urun>()
                 .Property(p => p.Fiyat)
                 .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Urun>()
+        .HasIndex(u => u.Slug)
+        .IsUnique()
+        .HasFilter("[Slug] IS NOT NULL");
+
+            modelBuilder.Entity<Kategori>()
+                .HasIndex(k => k.Slug)
+                .IsUnique()
+                .HasFilter("[Slug] IS NOT NULL");
         }
     }
 }

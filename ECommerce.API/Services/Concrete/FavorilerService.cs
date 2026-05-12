@@ -27,6 +27,7 @@ namespace ECommerce.API.Services.Concrete
                     UrunId = f.UrunId,
                     UrunAd = f.Urun.Ad,
                     Fiyat = f.Urun.Fiyat,
+                    UrunSlug = f.Urun.Slug,
                     Gorsel = f.Urun.Resimler
                         .OrderBy(r => r.SiraNo)
                         .Select(r => r.Url)

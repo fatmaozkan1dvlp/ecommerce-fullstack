@@ -138,7 +138,7 @@ const Favoriler = () => {
                                         </button>
 
                                         <button
-                                            onClick={() => navigate(`/urun/${f.urunId}`)}
+                                            onClick={() => navigate(`/urun/${f.slug || f.urunId}`)}
                                             className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500"
                                         />
                                     </div>
@@ -149,7 +149,7 @@ const Favoriler = () => {
                                         </span>
                                         <h3
                                             className="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-amber-600 transition-colors line-clamp-1 italic font-serif cursor-pointer"
-                                            onClick={() => navigate(`/urun/${f.urunId}`)}
+                                            onClick={() => navigate(`/urun/${f.slug || f.urunId}`)}
                                         >
                                             {f.urunAd}
                                         </h3>

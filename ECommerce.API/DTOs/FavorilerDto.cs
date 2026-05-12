@@ -7,6 +7,7 @@
         public string UrunAd { get; set; }
         public decimal Fiyat { get; set; }
         public string Gorsel { get; set; }
+        public string? UrunSlug { get; set; } 
     }
 
     public class FavoriIslemDto

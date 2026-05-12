@@ -8,7 +8,7 @@ import api, { IMG_URL } from '../api';
 import UserLayout from './UserLayout';
 
 const UrunDetay = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const navigate = useNavigate();
 
     const [urun, setUrun] = useState(null);
@@ -21,12 +21,23 @@ const UrunDetay = () => {
 
     const fetchSepetAdet = async () => {
         const token = localStorage.getItem("token");
-        if (!token) return;
-
+        if (!token || !urun) return;
         try {
             const res = await api.get("/Sepet");
-            const item = res.data.find(x => x.urunId === Number(id));
+            const item = res.data.find(x => x.urunId === urun.id);
             setSepettekiAdet(item ? item.adet : 0);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchFavoriDurum = async () => {
+        const token = localStorage.getItem("token");
+        if (!token || !urun) return;
+        try {
+            const res = await api.get("/Favoriler");
+            const favIds = res.data.map(f => f.urunId);
+            setIsFav(favIds.includes(urun.id));
         } catch (err) {
             console.error(err);
         }
@@ -39,19 +50,6 @@ const UrunDetay = () => {
         }, 4000);
     };
 
-    const fetchFavoriDurum = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        try {
-            const res = await api.get("/Favoriler");
-            const favIds = res.data.map(f => f.urunId);
-
-            setIsFav(favIds.includes(Number(id)));
-        } catch (err) {
-            console.error(err);
-        }
-    };
 
     const sepeteEkle = async () => {
         const token = localStorage.getItem("token");
@@ -113,7 +111,7 @@ const UrunDetay = () => {
         const fetchUrun = async () => {
             try {
                 setLoading(true);
-                const res = await api.get(`/Urunler/${id}`);
+                const res = await api.get(`/Urunler/slug/${slug}`);
                 setUrun(res.data);
             } catch (err) {
                 console.error("Ürün yüklenemedi", err);
@@ -123,10 +121,14 @@ const UrunDetay = () => {
         };
 
         fetchUrun();
+    }, [slug]);
+
+    useEffect(() => {
+        if (!urun) return;
         fetchFavoriDurum();
         fetchSepetAdet();
+    }, [urun]);
 
-    }, [id]);
 
     if (loading) return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-white">

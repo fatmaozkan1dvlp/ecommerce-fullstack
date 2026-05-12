@@ -18,6 +18,7 @@ namespace ECommerce.API.Models
         public virtual Kategori? Kategori { get; set; }
         public DateTime OlusturmaTarihi { get; set; } = DateTime.Now;
         public bool SilindiMi {  get; set; }=false;
+        public string? Slug { get; set; }
         public virtual List<UrunResim> Resimler { get; set; } = new();
     }
 }

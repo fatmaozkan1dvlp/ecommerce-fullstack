@@ -34,8 +34,8 @@ function App() {
             <Routes>
 
                 <Route path="/" element={<Home />} />
-                <Route path="/kategori/:id" element={<KategoriUrunleri />} />
-                <Route path="/urun/:id" element={<UrunDetay />} />
+                <Route path="/kategori/:slug" element={<KategoriUrunleri />} />
+                <Route path="/urun/:slug" element={<UrunDetay />} />
                 <Route path="/giris" element={<KullaniciGiris />} />
                 <Route path="/kayit" element={<KullaniciKayit />} />
                 <Route path="/sepet" element={<Sepet />} />

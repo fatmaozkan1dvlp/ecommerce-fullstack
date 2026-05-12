@@ -1,5 +1,6 @@
 ﻿using ECommerce.API.Data;
 using ECommerce.API.DTOs;
+using ECommerce.API.Helpers;
 using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,21 @@ namespace ECommerce.API.Services.Concrete
         public KategorilerService(AppDbContext context)
         {
             _context = context;
+        }
+
+        private async Task<string> SlugUretAsync(string ad, int? mevcutId = null)
+        {
+            var baseSlug = SlugHelper.Slugify(ad);
+            var slug = baseSlug;
+            int sayac = 1;
+
+            while (await _context.Kategoriler.AnyAsync(k =>
+                k.Slug == slug && (mevcutId == null || k.ID != mevcutId)))
+            {
+                slug = $"{baseSlug}-{sayac++}";
+            }
+
+            return slug;
         }
 
         public async Task<List<Kategori>> GetKategorilerAsync()
@@ -34,7 +50,8 @@ namespace ECommerce.API.Services.Concrete
             {
                 Ad = dto.Ad,
                 OlusturmaTarih = DateTime.Now,
-                SilindiMi = false
+                SilindiMi = false,
+                Slug = await SlugUretAsync(dto.Ad) // ✅
             };
 
             _context.Kategoriler.Add(kategori);
@@ -49,31 +66,30 @@ namespace ECommerce.API.Services.Concrete
                 return (false, "Kategori adı boş olamaz.");
 
             var mevcutKategori = await _context.Kategoriler.FindAsync(id);
-
-            if (mevcutKategori == null)
-                return (false, "Kategori bulunamadı.");
+            if (mevcutKategori == null) return (false, "Kategori bulunamadı.");
 
             var isimKullanimdaMi = await _context.Kategoriler
                 .AnyAsync(k => k.Ad.ToLower() == dto.Ad.ToLower() && k.ID != id && !k.SilindiMi);
 
             if (isimKullanimdaMi)
-                return (false, "Bu isimde başka bir kategori zaten mevcut.");
+                return (false, "Bu isimde başka bir kategori mevcut.");
 
-            mevcutKategori.Ad = dto.Ad;
+            // ✅ Ad değiştiyse slug'ı da güncelle
+            if (mevcutKategori.Ad != dto.Ad)
+            {
+                mevcutKategori.Ad = dto.Ad;
+                mevcutKategori.Slug = await SlugUretAsync(dto.Ad, id);
+            }
+
             await _context.SaveChangesAsync();
-
             return (true, "Kategori güncellendi.");
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> KategoriArsivleAsync(int id)
         {
             var kategori = await _context.Kategoriler.FindAsync(id);
-
-            if (kategori == null)
-                return (false, "Kategori bulunamadı.");
-
-            if (kategori.SilindiMi)
-                return (false, $"{kategori.Ad} zaten arşivde.");
+            if (kategori == null) return (false, "Kategori bulunamadı.");
+            if (kategori.SilindiMi) return (false, $"{kategori.Ad} zaten arşivde.");
 
             kategori.SilindiMi = true;
 
@@ -81,64 +97,47 @@ namespace ECommerce.API.Services.Concrete
                 .Where(u => u.KategoriId == id && !u.SilindiMi)
                 .ToListAsync();
 
-            foreach (var urun in bagliUrunler)
-                urun.SilindiMi = true;
+            foreach (var urun in bagliUrunler) urun.SilindiMi = true;
 
             await _context.SaveChangesAsync();
-
             return (true, $"{kategori.Ad} ve {bagliUrunler.Count} ürün arşivlendi.");
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> KategoriKaliciSilAsync(int id)
         {
             var kategori = await _context.Kategoriler.FindAsync(id);
+            if (kategori == null) return (false, "Kategori bulunamadı.");
 
-            if (kategori == null)
-                return (false, "Kategori bulunamadı.");
+            var aktifUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id && !u.SilindiMi);
+            if (aktifUrunVarMi) return (false, "Aktif ürünler var. Önce arşivleyin.");
 
-            var aktifUrunVarMi = await _context.Urunler
-                .AnyAsync(u => u.KategoriId == id && !u.SilindiMi);
-
-            if (aktifUrunVarMi)
-                return (false, "Aktif ürünler var. Önce ürünleri arşivleyin.");
-
-            var arsivdeUrunVarMi = await _context.Urunler
-                .AnyAsync(u => u.KategoriId == id && u.SilindiMi);
-
+            var arsivdeUrunVarMi = await _context.Urunler.AnyAsync(u => u.KategoriId == id && u.SilindiMi);
             if (arsivdeUrunVarMi)
             {
                 kategori.SilindiMi = true;
                 await _context.SaveChangesAsync();
-                return (true, "Arşivlenmiş ürünler bulunduğu için kategori arşive taşındı.");
+                return (true, "Arşivlenmiş ürünler olduğu için kategori arşive taşındı.");
             }
 
             _context.Kategoriler.Remove(kategori);
             await _context.SaveChangesAsync();
-
-            return (true, "Kategori kalıcı olarak silindi.");
+            return (true, "Kategori silindi.");
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> ArsivdenCikarAsync(int id)
         {
             var kategori = await _context.Kategoriler.FindAsync(id);
-
-            if (kategori == null)
-                return (false, "Kategori bulunamadı.");
-
-            if (!kategori.SilindiMi)
-                return (false, $"{kategori.Ad} zaten yayında.");
+            if (kategori == null) return (false, "Kategori bulunamadı.");
+            if (!kategori.SilindiMi) return (false, $"{kategori.Ad} zaten yayında.");
 
             kategori.SilindiMi = false;
             await _context.SaveChangesAsync();
-
-            return (true, $"{kategori.Ad} kategorisi aktif edildi. Ürünleri ayrıca yönetebilirsiniz.");
+            return (true, $"{kategori.Ad} aktif edildi.");
         }
 
         public async Task<List<Kategori>> GetArsivlenenKategorilerAsync()
         {
-            return await _context.Kategoriler
-                .Where(k => k.SilindiMi)
-                .ToListAsync();
+            return await _context.Kategoriler.Where(k => k.SilindiMi).ToListAsync();
         }
     }
 }

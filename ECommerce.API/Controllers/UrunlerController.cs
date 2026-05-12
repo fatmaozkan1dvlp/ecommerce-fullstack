@@ -3,6 +3,7 @@ using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.API.Controllers
 {
@@ -184,6 +185,24 @@ namespace ECommerce.API.Controllers
                 return NotFound(new { Message = sonuc.Mesaj });
             }
 
+            return Ok(sonuc.Data);
+        }
+
+        // ✅ Slug ile ürün getir
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetUrunBySlug(string slug)
+        {
+            var urun = await _urunlerService.GetUrunBySlugAsync(slug);
+            if (urun == null) return NotFound();
+            return Ok(urun);
+        }
+
+        // ✅ Slug ile kategori ürünleri
+        [HttpGet("kategori/slug/{slug}")]
+        public async Task<IActionResult> GetUrunlerByKategoriSlug(string slug)
+        {
+            var sonuc = await _urunlerService.GetUrunlerByKategoriSlugAsync(slug);
+            if (!sonuc.BasariliMi) return NotFound(new { Message = sonuc.Mesaj });
             return Ok(sonuc.Data);
         }
     }

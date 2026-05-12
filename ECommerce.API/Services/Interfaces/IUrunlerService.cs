@@ -8,6 +8,7 @@ namespace ECommerce.API.Services.Interfaces
         Task<List<UrunlerDto>> GetUrunlerAsync();
         Task<Urun> PostUrunAsync(UrunEkleDto dto);
         Task<object?> GetUrunByIdAsync(int id);
+        Task<object?> GetUrunBySlugAsync(string slug);                                              
         Task<(bool BasariliMi, string Mesaj, object? Data)> UrunGuncelleAsync(int id, UrunGuncelleDto dto);
         Task<(bool BasariliMi, string Mesaj)> UrunArsivleAsync(int id);
         Task<(bool BasariliMi, string Mesaj)> UrunKaliciSilAsync(int id);
@@ -17,6 +18,7 @@ namespace ECommerce.API.Services.Interfaces
         Task<(bool BasariliMi, string Mesaj)> ResimSilAsync(int resimId);
         Task<(bool BasariliMi, string Mesaj)> ResimKapakYapAsync(int resimId);
         Task<(bool BasariliMi, string Mesaj, object? Data)> GetUrunlerByKategoriAsync(int kategoriId);
+        Task<(bool BasariliMi, string Mesaj, object? Data)> GetUrunlerByKategoriSlugAsync(string slug); // ✅
         Task<(bool BasariliMi, string Mesaj, object? Data)> UrunAraAsync(string kelime);
     }
 }
