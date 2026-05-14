@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import { Mail, Lock, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
 import api, { getUserRole } from "../api";
 
@@ -50,6 +51,10 @@ const KullaniciGiris = () => {
     };
 
     return (
+        <>
+            <Helmet>
+                <title>Giriş Yap | DECO.STUDIO</title>
+            </Helmet>
         <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
             <button
                 onClick={() => navigate('/')}
@@ -133,7 +138,8 @@ const KullaniciGiris = () => {
                     </Link>
                 </p>
             </div>
-        </div>
+            </div>
+        </>
     );
 };
 

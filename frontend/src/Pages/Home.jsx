@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import { ArrowDownUp, ChevronDown, Heart, Loader2, Plus, CheckCircle2, SearchX } from 'lucide-react';
 import UserLayout from './UserLayout';
-import api, { IMG_URL } from '../api';
+import api, { getImageUrl } from '../api';
 
 const Home = () => {
+
     const [urunler, setUrunler] = useState([]);
     const [loading, setLoading] = useState(true);
     const [visibleCount, setVisibleCount] = useState(12);
@@ -108,6 +110,10 @@ const Home = () => {
 
     return (
         <UserLayout>
+            <Helmet>
+                <title>DECO.STUDIO </title>
+                <meta name="description" content="Özel tasarım dekorasyon ürünleri." />
+            </Helmet>
             {/* Bildirim Bannerı */}
             <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-500 transform ${notification.show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"}`}>
                 <div className="bg-gray-900 dark:bg-amber-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-md">
@@ -166,7 +172,8 @@ const Home = () => {
                         {currentUrunler.map((u) => {
                             let resimUrl = "https://via.placeholder.com/600x800";
                             if (u.galeri?.length > 0) {
-                                resimUrl = `${IMG_URL}/${u.galeri[0].replace(/^\//, '')}`;
+                                resimUrl = getImageUrl(u.galeri?.[0])
+                                    ?? "https://via.placeholder.com/600x800?text=Gorsel+Yok";;
                             }
                             return (
                                 <div key={u.id || u.ID} className="group flex flex-col">

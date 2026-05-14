@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
-import api, { IMG_URL } from '../api';
+import { Helmet } from 'react-helmet-async'
+import api, { getImageUrl } from '../api';
 import AdminLayout from './AdminLayout';
 import { Trash2, Edit, Package, Layers, Image as ImageIcon, Search, Archive } from 'lucide-react';
 
@@ -97,6 +98,8 @@ const Urunler = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Ürünler | Admin Panel</title></Helmet>
+
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border dark:border-gray-700">
                     <div>
@@ -165,12 +168,7 @@ const Urunler = () => {
                             <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {filtreliUrunler.length > 0 ? (
                                     filtreliUrunler.map((u) => {
-                                        let resimUrl = null;
-                                        if (u.galeri && u.galeri.length > 0) {
-                                            const path = u.galeri[0];
-                                            const cleanPath = path.startsWith('/') ? path : `/${path}`;
-                                            resimUrl = `${IMG_URL}${cleanPath}`;
-                                        }
+                                        const resimUrl = getImageUrl(u.galeri?.[0]);
 
                                         return (
                                             <div key={u.id || u.ID} className={`grid grid-cols-1 md:grid-cols-12 gap-4 items-center px-6 py-5 md:px-8 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all group ${u.stok === 0 ? 'opacity-70 grayscale-[0.5]' : ''}`}>
@@ -188,7 +186,7 @@ const Urunler = () => {
                                                                 }}
                                                             />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                            <div className="w-full h-full flex items-center justify-center">
                                                                 <ImageIcon size={20} />
                                                             </div>
                                                         )}

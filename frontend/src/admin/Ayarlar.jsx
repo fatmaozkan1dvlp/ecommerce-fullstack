@@ -1,4 +1,5 @@
-import { useState} from 'react';
+import { useState } from 'react';
+import { Helmet } from 'react-helmet-async'
 import api, { getTokenPayload } from '../api';
 import AdminLayout from './AdminLayout';
 import { User, ShieldCheck, RefreshCcw } from 'lucide-react';
@@ -53,6 +54,8 @@ const Ayarlar = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Ayarlar | Admin Panel</title></Helmet>
+
             <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex-1">
                     <h2 className="text-2xl font-black mb-8 dark:text-white uppercase tracking-tight flex items-center gap-2">

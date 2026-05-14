@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async'
 import api from '../api';
 import AdminLayout from './AdminLayout';
 import { Trash2, UserCheck, UserPlus, DollarSign, ShoppingBag, Search } from 'lucide-react';
@@ -46,6 +47,8 @@ const Musteriler = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Müşteriler | Admin Panel</title></Helmet>
+
             <div className="space-y-6">
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

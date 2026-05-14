@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import imageCompression from 'browser-image-compression';
@@ -112,6 +113,8 @@ const UrunEkle = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Ürün Ekle | Admin Panel</title></Helmet>
+
             <div className="max-w-5xl mx-auto pb-20">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border dark:border-gray-700">
                     <div className="flex items-center gap-4">

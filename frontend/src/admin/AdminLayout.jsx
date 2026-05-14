@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'; 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import {
     Menu, X, LayoutDashboard, ShoppingBag, Package, Settings, Layers, Users,
     Clock, Truck, CheckCircle, ChevronDown, XCircle, Boxes, Archive, LogOut, AlertTriangle
@@ -28,6 +29,9 @@ const AdminLayout = ({ children }) => {
     };
 
     return (
+        <>
+            <Helmet><title>Admin Panel</title></Helmet>
+
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
             {isSidebarOpen && (
                 <div
@@ -165,6 +169,7 @@ const AdminLayout = ({ children }) => {
                 </div>
             )}
         </div>
+      </>
     );
 };
 

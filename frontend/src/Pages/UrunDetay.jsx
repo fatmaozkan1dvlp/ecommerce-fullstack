@@ -1,10 +1,11 @@
 import React, { useState, useEffect} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import {
     ShoppingCart, ArrowLeft, Plus, Minus,
     ShieldCheck, Truck, Loader2, Heart, CheckCircle2
 } from 'lucide-react';
-import api, { IMG_URL } from '../api';
+import api, { getImageUrl } from '../api';
 import UserLayout from './UserLayout';
 
 const UrunDetay = () => {
@@ -141,6 +142,10 @@ const UrunDetay = () => {
 
     return (
         <UserLayout>
+            <Helmet>
+                <title>{urun?.ad} | DECO.STUDIO</title>
+                <meta name="description" content={urun?.aciklama || "Özel tasarım ürün."} />
+            </Helmet>
             <div
                 className={`fixed top-10 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-500 transform ${notification.show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
                     }`}
@@ -169,7 +174,7 @@ const UrunDetay = () => {
                             <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner">
                                 <img
                                     src={urun.resimler?.length > 0
-                                        ? `${IMG_URL}${urun.resimler[activeImage].url.startsWith('/') ? '' : '/'}${urun.resimler[activeImage].url}`
+                                        ? getImageUrl(urun.resimler[activeImage].url)
                                         : "https://via.placeholder.com/800x800?text=Gorsel+Yok"}
                                     className="w-full h-full object-cover transition-all duration-500"
                                     alt={urun.ad}
@@ -193,7 +198,7 @@ const UrunDetay = () => {
                                                 }`}
                                         >
                                             <img
-                                                src={`${IMG_URL}${img.url.startsWith('/') ? '' : '/'}${img.url}`}
+                                                src={getImageUrl(img.url)}
                                                 className="w-full h-full object-cover"
                                                 alt={`Görsel ${index + 1}`}
                                             />

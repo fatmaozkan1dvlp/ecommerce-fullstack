@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import {
     User, Package, LogOut, MapPin,
     ChevronRight, X, Loader2, ArrowLeft,
     CheckCircle2, Clock, Truck, XCircle, AlertTriangle
 } from 'lucide-react';
-import api from "../api";
+import api, { getImageUrl} from "../api";
 import toast from 'react-hot-toast';
 import UserLayout from './UserLayout';
+
 
 const getDurumStyle = (durum) => {
     switch (durum) {
@@ -125,6 +127,9 @@ const Profil = () => {
 
     return (
         <UserLayout>
+            <Helmet>
+                <title>Profilim | DECO.STUDIO</title>
+            </Helmet>
             <div className="bg-[#F8F9FA] min-h-screen pt-10 pb-20 px-4">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
@@ -324,7 +329,7 @@ const Profil = () => {
                                     <div className="flex items-center gap-3">
                                         {item.urunResimUrl ? (
                                             <img
-                                                src={`https://localhost:7126${item.urunResimUrl}`}
+                                                src={getImageUrl(item.urunResimUrl)}
                                                 className="w-14 h-14 rounded-xl object-cover border border-gray-100"
                                                 alt={item.urunAdi}
                                                 onError={(e) => { e.target.style.display = 'none'; }}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import { Mail, Lock, User, ArrowRight, Loader2, ChevronLeft, Phone } from 'lucide-react';
 import api from "../api";
 import toast from 'react-hot-toast';
@@ -72,7 +73,11 @@ const KullaniciKayit = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center px-6 py-12 relative">
+        <>
+            <Helmet>
+                <title>Kayıt Ol | DECO.STUDIO</title>
+            </Helmet>
+         <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center px-6 py-12 relative">
             <button
                 onClick={() => navigate('/')}
                 className="absolute top-6 left-6 md:top-10 md:left-10 flex items-center gap-2 text-gray-400 hover:text-amber-600 transition-colors font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]"
@@ -197,7 +202,7 @@ const KullaniciKayit = () => {
                 </p>
             </div>
         </div>
-    );
+    </>);
 };
 
 export default KullaniciKayit;

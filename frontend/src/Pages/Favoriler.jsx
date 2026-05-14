@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Heart, Loader2, LogIn } from "lucide-react";
+import { Helmet } from 'react-helmet-async'
 import { useNavigate, Link } from "react-router-dom";
-import api, { IMG_URL, isAuthenticated } from "../api";
+import api, { getImageUrl, isAuthenticated } from "../api";
 import UserLayout from "./UserLayout";
 import toast from "react-hot-toast";
 
@@ -52,6 +53,9 @@ const Favoriler = () => {
 
     return (
         <UserLayout>
+            <Helmet>
+                <title>Favorilerim | DECO.STUDIO</title>
+            </Helmet>
             <div className="max-w-[1800px] mx-auto px-3 md:px-10 py-6 md:py-12 min-h-[70vh]">
 
                 <div className="flex items-center justify-between pb-6 mb-8 border-b border-gray-100 dark:border-gray-800">
@@ -115,10 +119,8 @@ const Favoriler = () => {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-3 gap-y-8 md:gap-x-6 md:gap-y-12">
                         {favoriler.map((f) => {
-                            const cleanPath = f.gorsel?.startsWith('/') ? f.gorsel : `/${f.gorsel}`;
-                            const resimUrl = f.gorsel
-                                ? `${IMG_URL}${cleanPath}`
-                                : "https://via.placeholder.com/600x800?text=Gorsel+Yok";
+                            const resimUrl = getImageUrl(f.gorsel)
+                                ?? "https://via.placeholder.com/600x800?text=Gorsel+Yok";
 
                             return (
                                 <div key={f.id} className="group flex flex-col">

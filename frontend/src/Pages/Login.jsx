@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from 'react-helmet-async'
 import { Lock, Mail, ShieldCheck, Loader2, ChevronLeft } from 'lucide-react';
 import api, { getUserRole } from "../api";
 
@@ -50,6 +51,11 @@ const Login = () => {
     };
 
     return (
+        <>
+            <Helmet>
+                <title>Admin Girişi | DECO.STUDIO</title>
+            </Helmet>
+        
         <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-6 py-12">
             <button
                 onClick={() => navigate('/')}
@@ -125,7 +131,7 @@ const Login = () => {
                 </div>
             </div>
         </div>
-    );
+    </>);
 };
 
 export default Login;

@@ -4,19 +4,23 @@ using ECommerce.API.Helpers;
 using ECommerce.API.Models;
 using ECommerce.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace ECommerce.API.Services.Concrete
 {
     public class UrunlerService : IUrunlerService
     {
         private readonly AppDbContext _context;
+        private readonly Cloudinary _cloudinary;
 
-        public UrunlerService(AppDbContext context)
+        public UrunlerService(AppDbContext context, Cloudinary cloudinary)
         {
             _context = context;
+            _cloudinary = cloudinary;
         }
 
-        // ✅ Unique slug üretici
+        
         private async Task<string> SlugUretAsync(string ad, int? mevcutId = null)
         {
             var baseSlug = SlugHelper.Slugify(ad);
@@ -65,15 +69,14 @@ namespace ECommerce.API.Services.Concrete
                 SilindiMi = false
             };
 
-            // ✅ Slug otomatik üret
-            urun.Slug = await SlugUretAsync(dto.Ad);
+           urun.Slug = await SlugUretAsync(dto.Ad);
 
             _context.Urunler.Add(urun);
             await _context.SaveChangesAsync();
             return urun;
         }
 
-        // ✅ Slug ile getir
+        
         public async Task<object?> GetUrunBySlugAsync(string slug)
         {
             var urun = await _context.Urunler
@@ -131,7 +134,6 @@ namespace ECommerce.API.Services.Concrete
             if (mevcutUrun == null)
                 return (false, "Ürün bulunamadı.", null);
 
-            // ✅ Ad değiştiyse slug'ı da güncelle
             if (!string.IsNullOrWhiteSpace(dto.Ad) && dto.Ad != "string" && dto.Ad != mevcutUrun.Ad)
             {
                 mevcutUrun.Ad = dto.Ad;
@@ -185,7 +187,7 @@ namespace ECommerce.API.Services.Concrete
             return (true, "Başarılı", urunler);
         }
 
-        // ✅ Slug ile kategori ürünleri
+
         public async Task<(bool BasariliMi, string Mesaj, object? Data)> GetUrunlerByKategoriSlugAsync(string slug)
         {
             var kategori = await _context.Kategoriler
@@ -225,7 +227,6 @@ namespace ECommerce.API.Services.Concrete
             return (true, "Başarılı", urunler);
         }
 
-        // Diğer metodlar değişmedi
         public async Task<(bool BasariliMi, string Mesaj)> UrunArsivleAsync(int id)
         {
             var urun = await _context.Urunler.FindAsync(id);
@@ -292,32 +293,69 @@ namespace ECommerce.API.Services.Concrete
 
         public async Task<(bool BasariliMi, string Mesaj, object? Data)> ResimEkleAsync(int id, IFormFile dosya)
         {
-            var urun = await _context.Urunler.Include(u => u.Resimler).FirstOrDefaultAsync(u => u.ID == id);
-            if (urun == null) return (false, "Ürün bulunamadı.", null);
-            if (dosya == null || dosya.Length == 0) return (false, "Geçerli bir resim seçin.", null);
+            var urun = await _context.Urunler
+                .Include(u => u.Resimler)
+                .FirstOrDefaultAsync(u => u.ID == id);
 
-            var klasorYolu = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-            if (!Directory.Exists(klasorYolu)) Directory.CreateDirectory(klasorYolu);
+            if (urun == null)
+                return (false, "Ürün bulunamadı.", null);
 
-            var dosyaAdi = Guid.NewGuid().ToString() + Path.GetExtension(dosya.FileName);
-            var tamYol = Path.Combine(klasorYolu, dosyaAdi);
+            if (dosya == null || dosya.Length == 0)
+                return (false, "Geçerli bir resim dosyası seçmelisiniz.", null);
 
-            using (var stream = new FileStream(tamYol, FileMode.Create))
-                await dosya.CopyToAsync(stream);
+            // Cloudinary
+            using var stream = dosya.OpenReadStream();
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(dosya.FileName, stream),
+                Folder = "ecommerce/urunler",
+                Transformation = new Transformation()
+                    .Width(1280).Height(1280)
+                    .Crop("limit")
+                    .Quality("auto")
+                    .FetchFormat("auto")
+            };
 
-            var yeniResim = new UrunResim { UrunId = id, Url = "/images/" + dosyaAdi, SiraNo = urun.Resimler.Count + 1 };
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.Error != null)
+                return (false, $"Resim yüklenemedi: {uploadResult.Error.Message}", null);
+
+            var yeniResim = new UrunResim
+            {
+                UrunId = id,
+                Url = uploadResult.SecureUrl.ToString(), 
+                SiraNo = urun.Resimler.Count + 1
+            };
+
             _context.UrunResimleri.Add(yeniResim);
             await _context.SaveChangesAsync();
 
-            return (true, "Resim eklendi.", new { url = yeniResim.Url });
+            return (true, "Resim başarıyla eklendi.", new { url = yeniResim.Url });
         }
 
         public async Task<(bool BasariliMi, string Mesaj)> ResimSilAsync(int resimId)
         {
             var resim = await _context.UrunResimleri.FindAsync(resimId);
-            if (resim == null) return (false, "Resim bulunamadı.");
+
+            if (resim == null)
+                return (false, "Resim bulunamadı.");
+
+            if (resim.Url.Contains("cloudinary.com"))
+            {
+                var uri = new Uri(resim.Url);
+                var segments = uri.AbsolutePath.Split('/');
+                var publicIdWithExt = string.Join("/", segments.Skip(
+                    Array.IndexOf(segments, "ecommerce")));
+                var publicId = Path.GetFileNameWithoutExtension(publicIdWithExt);
+                var fullPublicId = $"ecommerce/urunler/{publicId}";
+
+                await _cloudinary.DestroyAsync(new DeletionParams(fullPublicId));
+            }
+
             _context.UrunResimleri.Remove(resim);
             await _context.SaveChangesAsync();
+
             return (true, "Resim silindi.");
         }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
+import { Helmet } from 'react-helmet-async'
 import api from '../api';
 import AdminLayout from './AdminLayout';
 import { Trash2, Edit, Layers, Plus, Search, Archive, Check, X } from 'lucide-react';
@@ -81,6 +82,8 @@ const Kategoriler = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Kategoriler | Admin Panel</title></Helmet>
+
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border dark:border-gray-700">
                     <div>

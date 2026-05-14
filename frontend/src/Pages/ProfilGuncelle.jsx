@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async'
 import {
     User, Mail, Phone, MapPin, Lock, Save,
     ArrowLeft, Loader2, CheckCircle2, ShieldCheck, AlertCircle
@@ -96,6 +97,9 @@ const ProfilGuncelle = () => {
 
     return (
         <>
+            <Helmet>
+                <title>Profil Güncelle | DECO.STUDIO</title>
+            </Helmet>
             <div className="bg-[#F8F9FA] min-h-screen pt-10 pb-20 px-4">
                 <div className="max-w-5xl mx-auto">
 

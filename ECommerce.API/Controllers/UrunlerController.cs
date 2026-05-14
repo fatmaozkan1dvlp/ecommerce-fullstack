@@ -188,7 +188,6 @@ namespace ECommerce.API.Controllers
             return Ok(sonuc.Data);
         }
 
-        // ✅ Slug ile ürün getir
         [HttpGet("slug/{slug}")]
         public async Task<IActionResult> GetUrunBySlug(string slug)
         {
@@ -197,7 +196,6 @@ namespace ECommerce.API.Controllers
             return Ok(urun);
         }
 
-        // ✅ Slug ile kategori ürünleri
         [HttpGet("kategori/slug/{slug}")]
         public async Task<IActionResult> GetUrunlerByKategoriSlug(string slug)
         {

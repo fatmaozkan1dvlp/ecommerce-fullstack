@@ -5,12 +5,23 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using CloudinaryDotNet;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+var cloudinarySettings = builder.Configuration.GetSection("Cloudinary");
+var cloudinary = new Cloudinary(new Account(
+    cloudinarySettings["CloudName"],
+    cloudinarySettings["ApiKey"],
+    cloudinarySettings["ApiSecret"]
+));
+cloudinary.Api.Secure = true;
+builder.Services.AddSingleton(cloudinary);
 
 builder.Services.AddSwaggerGen(opt =>
 {
@@ -95,6 +106,30 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ✅ Admin seed
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var adminSettings = builder.Configuration.GetSection("AdminSeed");
+
+    var adminEmail = adminSettings["EMail"];
+    var adminVarMi = db.Kullanicilar.Any(k => k.EMail == adminEmail);
+
+    if (!adminVarMi)
+    {
+        db.Kullanicilar.Add(new ECommerce.API.Models.Kullanici
+        {
+            AdSoyad = adminSettings["AdSoyad"]!,
+            EMail = adminEmail!,
+            SifreHash = BCrypt.Net.BCrypt.HashPassword(adminSettings["Sifre"]),
+            Rol = "Admin",
+            OlusturmaT = DateTime.Now,
+            SilindiMi = false
+        });
+        db.SaveChanges();
+        Console.WriteLine("✅ Admin kullanıcısı oluşturuldu.");
+    }
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();

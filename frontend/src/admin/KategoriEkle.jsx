@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import api from '../api';
 import AdminLayout from './AdminLayout';
 import { ChevronLeft, Save, Layers, AlertCircle, Sparkles } from 'lucide-react';
@@ -30,6 +31,7 @@ const KategoriEkle = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Kategori Ekle | Admin Panel</title></Helmet>
             <div className="max-w-2xl mx-auto pb-10">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center space-x-3 md:space-x-4">

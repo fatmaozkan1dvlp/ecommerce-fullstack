@@ -51,7 +51,7 @@ namespace ECommerce.API.Services.Concrete
                 Ad = dto.Ad,
                 OlusturmaTarih = DateTime.Now,
                 SilindiMi = false,
-                Slug = await SlugUretAsync(dto.Ad) // ✅
+                Slug = await SlugUretAsync(dto.Ad) 
             };
 
             _context.Kategoriler.Add(kategori);
@@ -74,7 +74,6 @@ namespace ECommerce.API.Services.Concrete
             if (isimKullanimdaMi)
                 return (false, "Bu isimde başka bir kategori mevcut.");
 
-            // ✅ Ad değiştiyse slug'ı da güncelle
             if (mevcutKategori.Ad != dto.Ad)
             {
                 mevcutKategori.Ad = dto.Ad;

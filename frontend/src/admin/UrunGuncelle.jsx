@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'
 import imageCompression from 'browser-image-compression';
-import api, { IMG_URL } from '../api';
+import api, { getImageUrl } from '../api';
 import AdminLayout from './AdminLayout';
 import { ChevronLeft, Save, Package, List, Image as ImageIcon, X, Plus, Star, Trash2, Info, AlertCircle } from 'lucide-react';
 
@@ -166,6 +167,8 @@ const UrunGuncelle = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Ürün Güncelle | Admin Panel</title></Helmet>
+
             <div className="max-w-6xl mx-auto pb-20 px-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border dark:border-gray-700">
                     <div className="flex items-center gap-4">
@@ -227,7 +230,7 @@ const UrunGuncelle = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 {mevcutResimler.map((img) => (
                                     <div key={img.id} className={`relative aspect-square rounded-2xl overflow-hidden group border-2 transition-all ${kapakResimId === img.id ? 'border-amber-500 shadow-lg shadow-amber-500/20' : 'border-transparent'}`}>
-                                        <img src={`${IMG_URL}${img.url}`} className="w-full h-full object-cover" alt="" />
+                                        <img src={getImageUrl(img.url)} className="w-full h-full object-cover" alt="" />
 
                                         <div className="absolute inset-0 bg-black/40 md:opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                                             <button type="button" onClick={() => onMakeCoverLocal(img.id)} className={`p-2 rounded-xl transition-all ${kapakResimId === img.id ? 'bg-amber-500 text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>

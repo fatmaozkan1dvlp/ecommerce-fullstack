@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../api';
+import { Helmet } from 'react-helmet-async'
+import api ,{ getImageUrl} from '../api';
 import AdminLayout from './AdminLayout';
 import { Package, Eye, Search } from 'lucide-react';
+
 
 const Siparisler = () => {
     const { durum } = useParams();
@@ -72,6 +74,8 @@ const Siparisler = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Siparişler | Admin Panel</title></Helmet>
+
             <div className="space-y-6">
                 <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border dark:border-gray-700">
                     <div className="flex items-center gap-3">
@@ -200,7 +204,7 @@ const Siparisler = () => {
                                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-2xl border dark:border-gray-800">
                                     <div className="flex items-center gap-4">
                                         <img
-                                            src={`https://localhost:7126${item.urunResimUrl}`}
+                                            src={getImageUrl(item.urunResimUrl)}
                                             alt={item.urunAdi}
                                             className="w-12 h-12 rounded-lg object-cover border dark:border-gray-700"
                                         />

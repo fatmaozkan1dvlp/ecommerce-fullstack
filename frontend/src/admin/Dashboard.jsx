@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async'
 import api from '../api';
 import AdminLayout from './AdminLayout';
 import { ShoppingCart, DollarSign, Package, Clock, ChevronRight } from 'lucide-react';
@@ -27,6 +28,8 @@ const Dashboard = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Dashboard | Admin Panel</title></Helmet>
+
             <div className="flex flex-col gap-6 pb-10">
                 <h2 className="text-xl md:text-2xl font-black dark:text-white uppercase tracking-tight">Genel Bakış</h2>
 

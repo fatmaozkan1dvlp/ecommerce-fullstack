@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { Helmet } from 'react-helmet-async'
 import { Loader2, Plus, Minus, Trash2, ShoppingCart, LogIn, MapPin, Phone, CheckCircle2, X } from "lucide-react";
-import api, { IMG_URL, isAuthenticated } from "../api";
+import api, { getImageUrl, isAuthenticated } from "../api";
 import UserLayout from "./UserLayout";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -132,6 +133,9 @@ const Sepet = () => {
 
     return (
         <UserLayout>
+            <Helmet>
+                <title>Sepetim | DECO.STUDIO</title>
+            </Helmet>
             <div className="max-w-6xl mx-auto px-4 py-10 min-h-[70vh]">
 
                 {!girisYapildi ? (
@@ -180,7 +184,7 @@ const Sepet = () => {
                             {sepet.map(item => (
                                 <div key={item.id} className="flex gap-4 bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                                     <img
-                                        src={`${IMG_URL}${item.gorsel?.startsWith('/') ? item.gorsel : '/' + item.gorsel}`}
+                                        src={getImageUrl(item.gorsel) ?? "https://via.placeholder.com/150?text=Resim+Yok"}
                                         className="w-24 h-24 object-cover rounded-2xl border border-gray-100 flex-shrink-0"
                                         alt={item.urunAd}
                                         onError={(e) => { e.target.src = "https://via.placeholder.com/150?text=Resim+Yok"; }}

@@ -1,8 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
-import api from '../api';
+import { Helmet } from 'react-helmet-async'
+import api ,{ getImageUrl} from '../api';
 import AdminLayout from './AdminLayout';
 import { ArchiveRestore, Package, Search, Image as ImageIcon, ChevronLeft, Layers, Info } from 'lucide-react';
+
 
 const Arsivlenenler = () => {
     const [urunler, setUrunler] = useState(null);
@@ -57,6 +59,8 @@ const Arsivlenenler = () => {
 
     return (
         <AdminLayout>
+            <Helmet><title>Arşiv | Admin Panel</title></Helmet>
+
             <div className="flex flex-col gap-6 pb-20 md:pb-10 max-w-full">
                 <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-[2rem] shadow-sm border dark:border-gray-700">
                     <div className="flex flex-col gap-6">
@@ -137,7 +141,7 @@ const Arsivlenenler = () => {
                                                 {aktifTab === "urunler" && (
                                                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden border dark:border-gray-600 flex-shrink-0">
                                                         {item.galeri?.[0] ?
-                                                            <img src={`https://localhost:7126${item.galeri[0]}`} alt="" className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all" />
+                                                            <img src={getImageUrl(item.galeri?.[0])} alt="" className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all" />
                                                             : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={16} className="text-gray-400" /></div>
                                                         }
                                                     </div>

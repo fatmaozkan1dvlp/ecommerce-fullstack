@@ -1,6 +1,7 @@
 import { useState, useEffect,useRef } from 'react';
 import { Link,useParams } from 'react-router-dom';
-import api, { IMG_URL } from '../api';
+import { Helmet } from 'react-helmet-async'
+import api, { getImageUrl } from '../api';
 import { ShoppingBag, Heart, ArrowDownUp, ChevronDown, Plus, CheckCircle2 } from 'lucide-react';
 import UserLayout from './UserLayout';
 
@@ -134,6 +135,9 @@ const KategoriUrunleri = () => {
 
     return (
         <UserLayout> 
+            <Helmet>
+                <title> DECO.STUDIO</title>
+            </Helmet>
             <div
                 className={`fixed top-10 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-500 transform ${notification.show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
                     }`}
@@ -222,14 +226,10 @@ const KategoriUrunleri = () => {
                 ) : urunler.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-3 gap-y-8 md:gap-x-6 md:gap-y-12">
                         {currentUrunler.map((urun) => {
-                            let gosterilecekResim = "https://via.placeholder.com/400x500?text=Resim+Yok";
                             const galeri = urun?.galeri || urun?.Galeri;
+                            const gosterilecekResim = getImageUrl(galeri?.[0])
+                                ?? "https://via.placeholder.com/400x500?text=Resim+Yok";
 
-                            if (galeri && galeri.length > 0) {
-                                const path = galeri[0];
-                                const cleanPath = path.startsWith('/') ? path : `/${path}`;
-                                gosterilecekResim = `${IMG_URL}${cleanPath}`;
-                            }
 
                             return (
                                 <div key={urun?.id || urun?.ID} className="group flex flex-col">

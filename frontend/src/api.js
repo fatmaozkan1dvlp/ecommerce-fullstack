@@ -6,8 +6,11 @@ const api = axios.create({
     timeout: 10000
 });
 
-export const IMG_URL = import.meta.env.VITE_IMG_URL;
-
+export const getImageUrl = (url) => {
+    if (!url) return "https://via.placeholder.com/600x800?text=Gorsel+Yok";
+    if (url.startsWith('http')) return url;
+    return "https://via.placeholder.com/600x800?text=Gorsel+Yok";
+};
 
 const getActiveToken = () => {
     return sessionStorage.getItem("adminToken") || localStorage.getItem("token");
