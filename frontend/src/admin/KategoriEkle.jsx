@@ -63,7 +63,7 @@ const KategoriEkle = () => {
                                 value={ad}
                                 onChange={(e) => setAd(e.target.value)}
                                 className="w-full p-4 md:p-5 rounded-2xl border-2 border-gray-50 dark:border-gray-900 bg-gray-50 dark:bg-gray-900/50 dark:text-white focus:border-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all text-sm md:text-base font-bold shadow-inner"
-                                placeholder="Örn: 3D Modeller, Hediyelik..."
+                                placeholder="Örn: Dekorlar, Hediyelik..."
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 group-focus-within:text-blue-500 transition-colors">
                                 <Sparkles size={18} />
