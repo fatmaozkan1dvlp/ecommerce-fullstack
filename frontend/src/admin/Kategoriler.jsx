@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import api from '../api';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from 'react-helmet-async'
-import api from '../api';
 import AdminLayout from './AdminLayout';
 import { Trash2, Edit, Layers, Plus, Search, Archive, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
