@@ -99,7 +99,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVercel",
         policy => policy
-            .WithOrigins("https://ecommerce-api-advx.onrender.com")
+            .WithOrigins("https://ecommerce-fullstack-navy-rho.vercel.app/")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
