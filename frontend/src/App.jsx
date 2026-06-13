@@ -1,30 +1,30 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
-import Dashboard from './admin/Dashboard';
-import Urunler from './admin/Urunler';
-import Kategoriler from './admin/Kategoriler';
-import Musteriler from './admin/Musteriler';
-import UrunEkle from "./admin/UrunEkle";
-import KategoriEkle from './admin/KategoriEkle';
-import Arsivlenenler from './admin/Arsivlenenler';
-import UrunGuncelle from './admin/UrunGuncelle';
-import Siparisler from './admin/Siparisler';
-import Ayarlar from './admin/Ayarlar';
+import Dashboard from './Admin/Dashboard';
+import Urunler from './Admin/Urunler';
+import Kategoriler from './Admin/Kategoriler';
+import Musteriler from './Admin/Musteriler';
+import UrunEkle from "./Admin/UrunEkle";
+import KategoriEkle from './Admin/KategoriEkle';
+import Arsivlenenler from './Admin/Arsivlenenler';
+import UrunGuncelle from './Admin/UrunGuncelle';
+import Siparisler from './Admin/Siparisler';
+import Ayarlar from './Admin/Ayarlar';
 
-import AdminRoute from './components/AdminRoute';
-import AuthRoute from './components/AuthRoute';
+import AdminRoute from './Components/AdminRoute';
+import AuthRoute from './Components/AuthRoute';
 
-import Login from './pages/Login';
-import Home from './pages/Home';
-import KullaniciGiris from './pages/KullaniciGiris';
-import KullaniciKayit from './pages/KullaniciKayit';
-import KategoriUrunleri from './pages/KategoriUrunleri';
-import Profil from './pages/Profil';
-import ProfilGuncelle from './pages/ProfilGuncelle';
-import UrunDetay from './pages/UrunDetay';
-import Favoriler from './pages/Favoriler';
-import Sepet from './pages/Sepet';
+import Login from './Pages/Login';
+import Home from './Pages/Home';
+import KullaniciGiris from './Pages/KullaniciGiris';
+import KullaniciKayit from './Pages/KullaniciKayit';
+import KategoriUrunleri from './Pages/KategoriUrunleri';
+import Profil from './Pages/Profil';
+import ProfilGuncelle from './Pages/ProfilGuncelle';
+import UrunDetay from './Pages/UrunDetay';
+import Favoriler from './Pages/Favoriler';
+import Sepet from './Pages/Sepet';
 
 function App() {
     return (
